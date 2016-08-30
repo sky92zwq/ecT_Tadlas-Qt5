@@ -65,8 +65,8 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>0</y>
+      <x>280</x>
+      <y>10</y>
       <width>361</width>
       <height>301</height>
      </rect>
@@ -78,30 +78,40 @@
      <attribute name="title">
       <string>usb</string>
      </attribute>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="open">
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>190</y>
+        <y>230</y>
         <width>89</width>
         <height>24</height>
        </rect>
       </property>
       <property name="text">
-       <string>PushButton</string>
+       <string>open</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_3">
+     <widget class="QPushButton" name="close">
       <property name="geometry">
        <rect>
         <x>140</x>
-        <y>190</y>
+        <y>230</y>
         <width>89</width>
         <height>24</height>
        </rect>
       </property>
       <property name="text">
-       <string>PushButton</string>
+       <string>close</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="listWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>40</y>
+        <width>241</width>
+        <height>171</height>
+       </rect>
       </property>
      </widget>
     </widget>
@@ -134,15 +144,18 @@
    <addaction name="menu"/>
    <addaction name="menuHaiyou"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
@@ -155,11 +168,43 @@
    <hints>
     <hint type="sourcelabel">
      <x>93</x>
-     <y>209</y>
+     <y>284</y>
     </hint>
     <hint type="destinationlabel">
      <x>233</x>
      <y>166</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>open</sender>
+   <signal>clicked()</signal>
+   <receiver>listWidget_2</receiver>
+   <slot>scrollToBottom()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>328</x>
+     <y>312</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>335</x>
+     <y>278</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>close</sender>
+   <signal>clicked()</signal>
+   <receiver>listWidget_2</receiver>
+   <slot>scrollToBottom()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>471</x>
+     <y>312</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>272</y>
     </hint>
    </hints>
   </connection>

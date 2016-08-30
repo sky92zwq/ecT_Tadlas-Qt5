@@ -4,6 +4,8 @@
 #include <QLibrary>
 #include <ftd2xx.h>
 #include <qtcore/qt_windows.h>
+#include <qstring.h>
+#include <qstringlist.h>
 
 
 class CS_ftfunction:public QLibrary
@@ -12,10 +14,6 @@ public:
 //    explicit CS_ftfunction(QObject *parent = Q_NULLPTR);
 
      explicit CS_ftfunction();
-
-//    explicit CS_ftfunction(const QString& fileName, int verNum, QObject *parent = Q_NULLPTR);
-//    explicit CS_ftfunction(const QString& fileName, const QString &version, QObject *parent = Q_NULLPTR);
-
 
     ~CS_ftfunction();
 public:
@@ -51,7 +49,6 @@ public:
 
     typedef FT_STATUS(WINAPI *PtrToGetQueueStatus)(FT_HANDLE, LPDWORD);
     PtrToGetQueueStatus m_pGetQueueStatus;
-    FT_STATUS GetQueueStatus(LPDWORD);
 
     typedef FT_STATUS(WINAPI *PtrToSetBaudRate)(FT_HANDLE ftHandle, DWORD dwBaudRate);
     PtrToSetBaudRate m_pSetBaudRate;
@@ -64,44 +61,83 @@ public:
     PtrToGetDeviceInfoDetail m_pGetDeviceInfoDetail;
 private:
     const QString fileName="ftd2xx.dll";
+    DWORD numDEv;                        //预留给成员函数返回usb数量
+
+public: /*builds a device information list and returns the number of D2XX devices
+     * connected to the system. The list contains information about both unopen and open devices.*/
+   DWORD getnumDEv();
 
 public:
        FT_HANDLE m_ftHandle;
        FT_STATUS m_ftStatus;
        HMODULE m_hmodule;
+private:
+       bool isopen;
+public:
+       inline bool isopened()
+       {
+           return isopen;
+       }
 public:
 //       BOOL loadftdll();
 
-       FT_STATUS MYUSB_Open(int iDevice);
+       FT_STATUS  Open(int iDevice);
 
-       FT_STATUS MYUSB_OpenEx(PVOID, DWORD);
+       FT_STATUS  OpenEx(PVOID, DWORD);
 
-       FT_STATUS MYUSB_ListDevices(PVOID, PVOID, DWORD);
+       FT_STATUS  ListDevices(PVOID, PVOID, DWORD);
 
-       FT_STATUS MYUSB_Close();
+       FT_STATUS  Close();
 
-       FT_STATUS MYUSB_SetBitMode(UCHAR, UCHAR);
+       FT_STATUS  SetBitMode(UCHAR, UCHAR);
 
-       FT_STATUS MYUSB_Read(LPVOID, DWORD, LPDWORD);
+       FT_STATUS  Read(LPVOID, DWORD, LPDWORD);
 
-       FT_STATUS MYUSB_Write(LPVOID, DWORD, LPDWORD);
+       FT_STATUS  Write(LPVOID, DWORD, LPDWORD);
 
-       FT_STATUS MYUSB_ResetDevice();
+       FT_STATUS  ResetDevice();
 
-       FT_STATUS MYUSB_Purge(ULONG);
+       FT_STATUS  Purge(ULONG);
 
-       FT_STATUS MYUSB_SetTimeouts(ULONG, ULONG);
+       FT_STATUS  SetTimeouts(ULONG, ULONG);
 
-       FT_STATUS MYUSB_GetQueueStatus(LPDWORD);
+       FT_STATUS  GetQueueStatus(LPDWORD);
 
-       FT_STATUS MYUSB_SetBaudRate(DWORD dwBaudRate);
+       FT_STATUS  SetBaudRate(DWORD dwBaudRate);
 
-       FT_STATUS MYUSB_CreateDeviceInfoList(LPDWORD lpdwNumDevs);
+       FT_STATUS  CreateDeviceInfoList(LPDWORD lpdwNumDevs);
 
-       FT_STATUS MYUSB_GetDeviceInfoDetail(DWORD dwIndex, LPDWORD lpdwFlags, LPDWORD lpdwType, LPDWORD lpdwID, LPDWORD lpdwLocId,
+       FT_STATUS  GetDeviceInfoDetail(DWORD dwIndex, LPDWORD lpdwFlags, LPDWORD lpdwType, LPDWORD lpdwID, LPDWORD lpdwLocId,
         PCHAR pcSerialNumber, PCHAR pcDescription);
 
        FT_STATUS GetDeviceInfoDetail(DWORD numDevs);
+public:
+       //
+       // Device status
+       //
+       QStringList status
+        {
+       "FT_OK",
+       "FT_INVALID_HANDLE",
+       "FT_DEVICE_NOT_FOUND",
+       "FT_DEVICE_NOT_OPENED",
+       "FT_IO_ERROR",
+       "FT_INSUFFICIENT_RESOURCES",
+       "FT_INVALID_PARAMETER",
+       "FT_INVALID_BAUD_RATE",
+
+       "FT_DEVICE_NOT_OPENED_FOR_ERASE",
+       "FT_DEVICE_NOT_OPENED_FOR_WRITE",
+       "FT_FAILED_TO_WRITE_DEVICE",
+       "FT_EEPROM_READ_FAILED",
+       "FT_EEPROM_WRITE_FAILED",
+       "FT_EEPROM_ERASE_FAILED",
+          "FT_EEPROM_NOT_PRESENT",
+          "FT_EEPROM_NOT_PROGRAMMED",
+          "FT_INVALID_ARGS",
+          "FT_NOT_SUPPORTED",
+          "FT_OTHER_ERROR"
+       };
 
 
 };

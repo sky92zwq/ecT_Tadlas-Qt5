@@ -12,11 +12,11 @@ int main(int argc, char *argv[])
     /*
      * 封装类CS_ftfunction完成usb的常用功能
     */
-    CS_ftfunction myusb;
-    qDebug()<<myusb.MYUSB_Open(0);
+//    CS_ftfunction myusb;
+//    qDebug()<<myusb.Open(0);
     /*
     */
-
+//    qDebug()<<myusb.getnumDEv();
 
     return a.exec();
 }
