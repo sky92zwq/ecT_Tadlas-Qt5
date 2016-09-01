@@ -14,13 +14,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cs_ftfunction.cpp
+    cs_ftfunction.cpp \
+    tdlasdialog.cpp
 
 HEADERS  += mainwindow.h \
     cs_ftfunction.h \
-    ftd2xx.h
+    ftd2xx.h \
+    tdlasdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    tdlasdialog.ui
 
 
 
