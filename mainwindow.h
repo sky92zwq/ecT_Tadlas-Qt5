@@ -11,6 +11,7 @@
 #include <qdatetime.h>
 #include <qthread.h>
 #include <qreadwritelock.h>
+#include <qbuffer.h>
 
 
 namespace Ui {
@@ -64,6 +65,16 @@ private:
     QAction *dataacquisition_action;
 private:
     QDockWidget *statusdock;
-};
+public:
+    QBuffer Rxbuffer;
+    class BufferThread1:public QThread
+    {
+        void run();
+    };
+    class BufferThread2:public QThread
+    {
+
+    };
+}
 
 #endif // MAINWINDOW_H

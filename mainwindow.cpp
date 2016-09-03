@@ -100,6 +100,8 @@ void MainWindow::tdlas()
 
 //thread1
 QThread f ;
+QBuffer bb;
+QByteDataBuffer ff;
 //thread2
 
 void MainWindow::dataacquisition()//数据采集动作
