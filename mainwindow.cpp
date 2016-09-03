@@ -94,12 +94,45 @@ void MainWindow::tdlas()
     tdlasDialog tdlasdl;
     tdlasdl.exec();
 }
+////////////////////////////////////////////////////////////
+/// \brief MainWindow::dataacquisition
+////////////////////////////////////////////////////////////
+
+//thread1
+//thread2
 
 void MainWindow::dataacquisition()//数据采集动作
 {
     QFile data;
 
+    //start a filedialog
+    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
+    QString savedirectory = QFileDialog::getExistingDirectory(this,
+                                        tr("Save Directory"),
+                                        "/",
+                                        options);
+    if (!savedirectory.isEmpty())
+          qDebug()<<(savedirectory)<<"err";
+    //filedialog ok or oansel
+    //ok --> go on
+    if(usb.getnumDEv()>0){
+        //start thread1
+        //start thread2
+        //while(run1||run2);//thread1,2 over jumpout
+
+        //usb.Read();
+        QDataStream datastr;
+    }
+    else{
+        ui->listWidget_2->clear();
+        ui->listWidget_2->addItem("open a ftdevice first");
+    }
+
+
 }
+//////////////////////////////////////////////////////////////
+/// \brief MainWindow::createToolBars
+//////////////////////////////////////////////////////////////
 void MainWindow::createToolBars()
 {
     toolusb=addToolBar("usb");

@@ -57,6 +57,14 @@
    <addaction name="menuHaiyou"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionUsb">
+   <property name="text">
+    <string>usb</string>
+   </property>
+   <property name="toolTip">
+    <string>open</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

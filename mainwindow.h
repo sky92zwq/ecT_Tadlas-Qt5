@@ -7,6 +7,7 @@
 #include <qdockwidget.h>
 #include <qtoolbar.h>
 #include <QFile>
+#include <qfiledialog.h>
 
 namespace Ui {
 class MainWindow;
@@ -55,7 +56,7 @@ private:
     QAction *closeusb_action;
     QAction *tdlas_action;
     QAction *dataacquisition_action;
-
+private:
     QDockWidget *statusdock;
 };
 
