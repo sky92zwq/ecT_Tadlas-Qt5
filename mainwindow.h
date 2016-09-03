@@ -8,10 +8,10 @@
 #include <qtoolbar.h>
 #include <QFile>
 #include <qfiledialog.h>
-<<<<<<< HEAD
-=======
 #include <qdatetime.h>
->>>>>>> dev
+#include <qthread.h>
+#include <qreadwritelock.h>
+
 
 namespace Ui {
 class MainWindow;
