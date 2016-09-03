@@ -8,6 +8,10 @@
 #include <qtoolbar.h>
 #include <QFile>
 #include <qfiledialog.h>
+<<<<<<< HEAD
+=======
+#include <qdatetime.h>
+>>>>>>> dev
 
 namespace Ui {
 class MainWindow;
@@ -47,6 +51,8 @@ private:
 
 private:
     Ui::MainWindow *ui;
+
+    QDateTime datetime;
 private:
 
     QToolBar *toolusb;
