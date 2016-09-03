@@ -63,7 +63,7 @@ void MainWindow::openusb()//closeusb action
 
     QString num;
     num=QString::number( usb.getnumDEv());
-    num+=" devivecs";
+    num+=" devices";
     ui->listWidget_2->addItem(num);
 
     QString label;
@@ -97,7 +97,37 @@ void MainWindow::tdlas()
 
 void MainWindow::dataacquisition()//数据采集动作
 {
-    QFile data;
+
+    if(1){
+        if(1){
+            QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
+            QString savedirectory = QFileDialog::getExistingDirectory(this,
+                                                                      tr("Save Directory()"),
+                                                                      "/..",
+                                                                      options);
+            if (savedirectory.isEmpty())
+                qDebug()<<"err";
+            else{
+                ui->listWidget_2->addItem("save at "+savedirectory);
+
+                datetime=QDateTime::currentDateTime();
+                QString dt= datetime.toString("yyyy-MM-dd_HH.mm");
+
+                QDir::setCurrent(savedirectory);
+                QFile *datafile=new QFile(dt+"_acquicition.dat");
+                datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+                datafile->close();
+                qDebug()<<datafile->exists();
+            }
+
+
+        }
+        else
+            ui->listWidget_2->addItem("err: open a ft_device first");
+    }
+    else
+        ui->listWidget_2->addItem("err: find a ft_device first");
+
 
 }
 void MainWindow::createToolBars()
