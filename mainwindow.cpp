@@ -101,7 +101,7 @@ void MainWindow::tdlas()
 //thread1
 QThread f ;
 QBuffer bb;
-QByteDataBuffer ff;
+
 //thread2
 
 void MainWindow::dataacquisition()//数据采集动作
@@ -120,14 +120,36 @@ void MainWindow::dataacquisition()//数据采集动作
                 ui->listWidget_2->addItem("save at "+savedirectory);
                 if(savedirectory=="C:/")ui->listWidget_2->addItem("do not use C:/ as saving position");
 
-                datetime=QDateTime::currentDateTime();
-                QString dt= datetime.toString("yyyy-MM-dd_HH.mm");
+                datetime=QDateTime::currentDateTime();//准备文件
+                QString dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
 
-                QDir::setCurrent(savedirectory);
+                QDir::setCurrent(savedirectory);//准备文件
                 QFile *datafile=new QFile(dt+"_acquicition.dat");
                 datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
                 datafile->close();
                 qDebug()<<datafile->exists();
+
+                RWBuffer *bufferrwer=new RWBuffer;//接受写入文件准备读写类RWbuffer
+                bufferrwer->moveToThread(&RWthread);//开辟线程运行读写类
+                connect(&RWthread, &QThread::finished, bufferrwer, &QObject::deleteLater);
+                connect(this,SIGNAL(startacquisition()),bufferrwer,SLOT(rwbuffer()));
+                connect(bufferrwer,SIGNAL(rwcount()),this,SLOT(acquisitioncount()));
+
+                emit startacquisition();//发送开始采集信号
+
+                QByteArray TxBuffer;
+
+                QDataStream in(&TxBuffer, QIODevice::ReadWrite);
+                BYTE asdf[100];
+                in<<(quint8)0x88<<(quint8)0x00;
+                qDebug()<<TxBuffer.data();
+                qDebug()<<TxBuffer.toHex();
+                qDebug()<<TxBuffer.size();
+
+
+                DWORD BytesReceived;
+                usb.Write(&TxBuffer,2,&BytesReceived);//向下写入发送命令
+                qDebug()<<BytesReceived;
             }
         }
         else
@@ -182,3 +204,5 @@ void MainWindow::createdockwidget()
     statusdock->setWidget(ui->listWidget_2);
     addDockWidget(Qt::RightDockWidgetArea,statusdock);
 }
+
+

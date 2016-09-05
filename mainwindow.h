@@ -17,6 +17,22 @@
 namespace Ui {
 class MainWindow;
 }
+class RWBuffer:public QObject
+{
+Q_OBJECT
+public slots:
+    void rwbuffer()
+    {
+     ;
+    }
+signals:
+
+    void rwcount();
+
+private:
+    uint count;//infinite how?
+
+};
 
 class MainWindow : public QMainWindow
 {
@@ -41,6 +57,12 @@ protected slots:
     void tdlas();
 
     void dataacquisition();
+private slots:
+    void acquisitioncount(){;}
+signals:
+
+    void startacquisition();
+
 private:
     void createToolBars();
 
@@ -66,15 +88,12 @@ private:
 private:
     QDockWidget *statusdock;
 public:
-    QBuffer Rxbuffer;
-    class BufferThread1:public QThread
-    {
-        void run();
-    };
-    class BufferThread2:public QThread
-    {
+    QThread RWthread;
+    QBuffer RWbuffer;
+    QByteArray RWbyte;
+    RWBuffer  BufferRWer;
 
-    };
-}
+};
+
 
 #endif // MAINWINDOW_H
