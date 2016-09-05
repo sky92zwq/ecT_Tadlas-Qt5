@@ -17,13 +17,25 @@
 namespace Ui {
 class MainWindow;
 }
+///
+/// \brief The RWBuffer class多线程提供读写者,锁住buffer
+///
 class RWBuffer:public QObject
 {
 Q_OBJECT
 public slots:
-    void rwbuffer()
-    {
-     ;
+    void rwbuffer(CS_ftfunction& usb){
+         char RxBuffer[bufferlong];
+
+         QDataStream infile(&datafile, QIODevice::ReadWrite);
+         DWORD BytesReceived;
+         while(){
+             //加锁
+             usb.Read(&RxBuffer,bufferlong,&BytesReceived);
+             //锁
+             infile.writeRawData(RxBuffer,sizeof(char)*bufferlong);//sizeof char就是8位
+
+         }
     }
 signals:
 
@@ -31,9 +43,13 @@ signals:
 
 private:
     uint count;//infinite how?
+    const int bufferlong;
+    quint8 shangweijibuffer[100];
 
 };
-
+///
+/// \brief The MainWindow class
+///
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -91,7 +107,7 @@ public:
     QThread RWthread;
     QBuffer RWbuffer;
     QByteArray RWbyte;
-    RWBuffer  BufferRWer;
+    friend RWBuffer  BufferRWer;
 
 };
 
