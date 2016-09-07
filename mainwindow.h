@@ -11,43 +11,13 @@
 #include <qdatetime.h>
 #include <qthread.h>
 #include <qreadwritelock.h>
-#include <qbuffer.h>
+#include <qmutex.h>
 
 
 namespace Ui {
 class MainWindow;
 }
-///
-/// \brief The RWBuffer class多线程提供读写者,锁住buffer
-///
-class RWBuffer:public QObject
-{
-Q_OBJECT
-public slots:
-    void rwbuffer(CS_ftfunction& usb){
-         char RxBuffer[bufferlong];
 
-         QDataStream infile(&datafile, QIODevice::ReadWrite);
-         DWORD BytesReceived;
-         while(){
-             //加锁
-             usb.Read(&RxBuffer,bufferlong,&BytesReceived);
-             //锁
-             infile.writeRawData(RxBuffer,sizeof(char)*bufferlong);//sizeof char就是8位
-
-         }
-    }
-signals:
-
-    void rwcount();
-
-private:
-    uint count;//infinite how?
-    const int bufferlong;
-    quint8 shangweijibuffer[100];
-
-};
-///
 /// \brief The MainWindow class
 ///
 class MainWindow : public QMainWindow
@@ -75,9 +45,11 @@ protected slots:
     void dataacquisition();
 private slots:
     void acquisitioncount(){;}
+
+    void threadstatus(FT_STATUS st);//看看子线程的状态
 signals:
 
-    void startacquisition();
+    void startacquisition(CS_ftfunction &usb,QFile *file);
 
 private:
     void createToolBars();
@@ -104,10 +76,50 @@ private:
 private:
     QDockWidget *statusdock;
 public:
-    QThread RWthread;
-    QBuffer RWbuffer;
+    QThread RWthread1;
+    QThread RWthread2;
+
     QByteArray RWbyte;
-    friend RWBuffer  BufferRWer;
+
+};
+/// \brief The RWBuffer class多线程提供读写者,锁住buffer
+///
+class RWBuffer:public QObject
+{
+Q_OBJECT
+public:
+    explicit RWBuffer(bool run,const int bufferlong)
+        :run(run),bufferlong(bufferlong),QObject(){}
+public slots:
+    void rwbuffer(CS_ftfunction& usb,QFile *datafile){
+         char RxBuffer[bufferlong];
+
+         QDataStream infile(datafile);
+         DWORD BytesReceived;
+         QMutex lock1,lock2;
+         while(run==true){
+             //加锁
+             lock1.lock();
+
+             emit readbuffer(usb.Read(RxBuffer,bufferlong,&BytesReceived));
+             lock1.unlock();
+             //锁
+             lock2.lock();
+             infile.writeRawData(RxBuffer,sizeof(char)*bufferlong);//sizeof char就是8位
+             lock2.unlock();
+         }
+    }
+signals:
+
+    void rwcount();
+    void readbuffer(FT_STATUS);
+
+private:
+    uint count;//infinite how?
+    const int bufferlong;
+    quint8 shangweijibuffer[100];
+public:
+    bool run;
 
 };
 

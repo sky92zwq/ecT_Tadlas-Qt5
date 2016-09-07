@@ -6,6 +6,7 @@ tdlasDialog::tdlasDialog(QWidget *parent) :
     ui(new Ui::tdlasDialog)
 {
     ui->setupUi(this);
+
 }
 
 tdlasDialog::~tdlasDialog()

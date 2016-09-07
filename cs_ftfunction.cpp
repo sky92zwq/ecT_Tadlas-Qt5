@@ -64,8 +64,12 @@ FT_STATUS CS_ftfunction::Close(){
         qDebug("failed, Link to FT_Close is failed!");
         return FT_INVALID_HANDLE;
     }
-    else
-        return (*m_pClose)(m_ftHandle);
+    else{
+        FT_STATUS close=(*m_pClose)(m_ftHandle);
+        if(close==FT_OK)isopen=false;
+        return close;
+
+    }
 }
 
 FT_STATUS CS_ftfunction::SetBitMode(UCHAR ucMask, UCHAR ucMode){

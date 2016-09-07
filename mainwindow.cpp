@@ -94,21 +94,17 @@ void MainWindow::tdlas()
     tdlasDialog tdlasdl;
     tdlasdl.exec();
 }
-///
+
 /// \brief MainWindow::dataacquisition
 ///
 
-//thread1
-QThread f ;
-QBuffer bb;
-
-//thread2
 
 void MainWindow::dataacquisition()//数据采集动作
 {
+    statusdock->setVisible(true);//使停靠栏可见
 
-    if(1){//usb.getnumDev()
-        if(1){//usb.isopened()
+    if(usb.getnumDEv()){//usb.getnumDEv()
+        if(usb.isopened()){//usb.isopened()
             QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
             QString savedirectory = QFileDialog::getExistingDirectory(this,
                                                                       tr("Save Directory"),
@@ -126,42 +122,58 @@ void MainWindow::dataacquisition()//数据采集动作
                 QDir::setCurrent(savedirectory);//准备文件
                 QFile *datafile=new QFile(dt+"_acquicition.dat");
                 datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-                datafile->close();
+                //datafile->close();
                 qDebug()<<datafile->exists();
 
-                RWBuffer *bufferrwer=new RWBuffer;//接受写入文件准备读写类RWbuffer
-                bufferrwer->moveToThread(&RWthread);//开辟线程运行读写类
-                connect(&RWthread, &QThread::finished, bufferrwer, &QObject::deleteLater);
-                connect(this,SIGNAL(startacquisition()),bufferrwer,SLOT(rwbuffer()));
+                RWBuffer *bufferrwer=new RWBuffer(true,4096);//接受写入文件准备读写类RWbuffer
+                bufferrwer->moveToThread(&RWthread1);//开辟线程运行读写类
+                connect(&RWthread1, &QThread::finished, bufferrwer, &QObject::deleteLater);
+                connect(this,SIGNAL(startacquisition(CS_ftfunction&,QFile*)),bufferrwer,SLOT(rwbuffer(CS_ftfunction&,QFile*)));
+                connect(bufferrwer,SIGNAL(rwcount()),this,SLOT(acquisitioncount()));
+                connect(bufferrwer,SIGNAL(readbuffer(FT_STATUS)),this,SLOT(threadstatus(FT_STATUS)));
+
+                bufferrwer->moveToThread(&RWthread2);//开辟线程运行读写类
+                connect(&RWthread2, &QThread::finished, bufferrwer, &QObject::deleteLater);
+                connect(this,SIGNAL(startacquisition(CS_ftfunction&,QFile*)),bufferrwer,SLOT(rwbuffer(CS_ftfunction&,QFile*)));
                 connect(bufferrwer,SIGNAL(rwcount()),this,SLOT(acquisitioncount()));
 
-                emit startacquisition();//发送开始采集信号
+                RWthread1.start();//开始线程吧
+                RWthread2.start();//开始线程吧
 
-                QByteArray TxBuffer;
+                emit startacquisition(usb,datafile);//发送开始采集信号
 
+                QByteArray TxBuffer;//准备写入usb的发送命令
                 QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-                BYTE asdf[100];
-                in<<(quint8)0x88<<(quint8)0x00;
+                in<<(quint16)0x8800<<(quint16)4096;
                 qDebug()<<TxBuffer.data();
                 qDebug()<<TxBuffer.toHex();
                 qDebug()<<TxBuffer.size();
 
+                DWORD BytesReceived;//向下写入发送命令
 
-                DWORD BytesReceived;
-                usb.Write(&TxBuffer,2,&BytesReceived);//向下写入发送命令
+                if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
+                    ui->listWidget_2->addItem("发送命令写入成功");
                 qDebug()<<BytesReceived;
             }
         }
         else
+            ui->listWidget_2->scrollToBottom();
             ui->listWidget_2->addItem("err: open a ft_device first");
     }
     else
+        ui->listWidget_2->scrollToBottom();
         ui->listWidget_2->addItem("err: find a ft_device first");
+}
+
+void MainWindow::threadstatus(FT_STATUS st)
+{
+    ui->listWidget_2->scrollToBottom();
+    ui->listWidget_2->addItem(usb.status.at(st));
 }
 
 
 ///
-/// \brief MainWindow::createToolBars
+/// \brief MainWindow::creating...............
 ///
 void MainWindow::createToolBars()
 {
