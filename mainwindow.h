@@ -43,13 +43,15 @@ protected slots:
     void tdlas();
 
     void dataacquisition();
+
+    void stopacquisition();
 private slots:
     void acquisitioncount(){;}
 
     void threadstatus(FT_STATUS st);//看看子线程的状态
 signals:
 
-    void startacquisition(CS_ftfunction &usb,QFile *file);
+    void startacquisition(CS_ftfunction &usb,QString savedirectory);
 
 private:
     void createToolBars();
@@ -64,6 +66,7 @@ private:
     Ui::MainWindow *ui;
 
     QDateTime datetime;
+    QFile *datafile;
 private:
 
     QToolBar *toolusb;
@@ -73,6 +76,7 @@ private:
     QAction *closeusb_action;
     QAction *tdlas_action;
     QAction *dataacquisition_action;
+    QAction *stopacquisition_action;
 private:
     QDockWidget *statusdock;
 public:
@@ -82,46 +86,37 @@ public:
     QByteArray RWbyte;
 
 };
-/// \brief The RWBuffer class多线程提供读写者,锁住buffer
+
+
+/// \brief The RWThread class
 ///
-class RWBuffer:public QObject
-{
-Q_OBJECT
+class RWThread : public QThread
+  {
+      Q_OBJECT
 public:
-    explicit RWBuffer(bool run,const int bufferlong)
-        :run(run),bufferlong(bufferlong),QObject(){}
-public slots:
-    void rwbuffer(CS_ftfunction& usb,QFile *datafile){
-         char RxBuffer[bufferlong];
+    explicit RWThread(CS_ftfunction *u, QFile *df,const int bl)
+        :usb(u),datafile(df),bufferlong(bl),QThread(){}
+    void run();
+          /* ... here is the expensive or blocking operation ... */
+signals:
+    void resultReady(const QString &s);
 
-         QDataStream infile(datafile);
-         DWORD BytesReceived;
-         QMutex lock1,lock2;
-         while(run==true){
-             //加锁
-             lock1.lock();
-
-             emit readbuffer(usb.Read(RxBuffer,bufferlong,&BytesReceived));
-             lock1.unlock();
-             //锁
-             lock2.lock();
-             infile.writeRawData(RxBuffer,sizeof(char)*bufferlong);//sizeof char就是8位
-             lock2.unlock();
-         }
-    }
 signals:
 
     void rwcount();
     void readbuffer(FT_STATUS);
 
 private:
+    CS_ftfunction *usb;
+    QFile *datafile;
+    QString savedirectory;
     uint count;//infinite how?
     const int bufferlong;
     quint8 shangweijibuffer[100];
-public:
-    bool run;
 
-};
+
+  };
+
 
 
 #endif // MAINWINDOW_H

@@ -73,6 +73,8 @@ void MainWindow::openusb()//closeusb action
     }
     else
         ui->listWidget_2->addItem("device 0 is allrdeay opened");
+
+    ui->listWidget_2->scrollToBottom();
 }
 
 void MainWindow::closeusb()//closeusb action
@@ -87,6 +89,8 @@ void MainWindow::closeusb()//closeusb action
     }
     else
         ui->listWidget_2->addItem("device 0 is allrdeay closed");
+
+    ui->listWidget_2->scrollToBottom();
 }
 
 void MainWindow::tdlas()
@@ -103,8 +107,8 @@ void MainWindow::dataacquisition()//数据采集动作
 {
     statusdock->setVisible(true);//使停靠栏可见
 
-    if(usb.getnumDEv()){//usb.getnumDEv()
-        if(usb.isopened()){//usb.isopened()
+    if(1){//usb.getnumDEv()
+        if(1){//usb.isopened()
             QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
             QString savedirectory = QFileDialog::getExistingDirectory(this,
                                                                       tr("Save Directory"),
@@ -116,59 +120,56 @@ void MainWindow::dataacquisition()//数据采集动作
                 ui->listWidget_2->addItem("save at "+savedirectory);
                 if(savedirectory=="C:/")ui->listWidget_2->addItem("do not use C:/ as saving position");
 
-                datetime=QDateTime::currentDateTime();//准备文件
-                QString dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
-
+                QDateTime datetime=QDateTime::currentDateTime();//准备文件
+                QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
                 QDir::setCurrent(savedirectory);//准备文件
-                QFile *datafile=new QFile(dt+"_acquicition.dat");
-                datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+                datafile=new QFile(dt+"_acquicition.dat");
+                //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
                 //datafile->close();
-                qDebug()<<datafile->exists();
+                //qDebug()<<datafile->exists();
 
-                RWBuffer *bufferrwer=new RWBuffer(true,4096);//接受写入文件准备读写类RWbuffer
-                bufferrwer->moveToThread(&RWthread1);//开辟线程运行读写类
-                connect(&RWthread1, &QThread::finished, bufferrwer, &QObject::deleteLater);
-                connect(this,SIGNAL(startacquisition(CS_ftfunction&,QFile*)),bufferrwer,SLOT(rwbuffer(CS_ftfunction&,QFile*)));
-                connect(bufferrwer,SIGNAL(rwcount()),this,SLOT(acquisitioncount()));
-                connect(bufferrwer,SIGNAL(readbuffer(FT_STATUS)),this,SLOT(threadstatus(FT_STATUS)));
-
-                bufferrwer->moveToThread(&RWthread2);//开辟线程运行读写类
-                connect(&RWthread2, &QThread::finished, bufferrwer, &QObject::deleteLater);
-                connect(this,SIGNAL(startacquisition(CS_ftfunction&,QFile*)),bufferrwer,SLOT(rwbuffer(CS_ftfunction&,QFile*)));
-                connect(bufferrwer,SIGNAL(rwcount()),this,SLOT(acquisitioncount()));
-
-                RWthread1.start();//开始线程吧
-                RWthread2.start();//开始线程吧
-
-                emit startacquisition(usb,datafile);//发送开始采集信号
+                RWThread *rwthread1= new RWThread(&usb,datafile,4096);
 
                 QByteArray TxBuffer;//准备写入usb的发送命令
                 QDataStream in(&TxBuffer, QIODevice::ReadWrite);
                 in<<(quint16)0x8800<<(quint16)4096;
-                qDebug()<<TxBuffer.data();
-                qDebug()<<TxBuffer.toHex();
-                qDebug()<<TxBuffer.size();
-
                 DWORD BytesReceived;//向下写入发送命令
 
                 if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
                     ui->listWidget_2->addItem("发送命令写入成功");
                 qDebug()<<BytesReceived;
+
+                UCHAR MASK = 0xff;
+                UCHAR MODE = 0x40;
+                usb.SetBitMode(MASK, MODE);
+                rwthread1->start();//开始线程吧
+
+                //rwthread1->wait();
+                //RWthread2.wait();
+
             }
         }
-        else
-            ui->listWidget_2->scrollToBottom();
-            ui->listWidget_2->addItem("err: open a ft_device first");
+        else{
+            ui->listWidget_2->addItem("err: ft_device's found, open it first");
+        }
+
     }
-    else
-        ui->listWidget_2->scrollToBottom();
+    else{
         ui->listWidget_2->addItem("err: find a ft_device first");
+    }
+
+    ui->listWidget_2->scrollToBottom();
+}
+
+void MainWindow::stopacquisition()
+{
+
 }
 
 void MainWindow::threadstatus(FT_STATUS st)
 {
-    ui->listWidget_2->scrollToBottom();
     ui->listWidget_2->addItem(usb.status.at(st));
+    ui->listWidget_2->scrollToBottom();
 }
 
 
@@ -184,6 +185,7 @@ void MainWindow::createToolBars()
 
     tooldataacquisition=addToolBar("data_acquisition");
     tooldataacquisition->addAction(dataacquisition_action);
+    tooldataacquisition->addAction(stopacquisition_action);
     //insert here
 
 }
@@ -202,6 +204,9 @@ void MainWindow::createaction()
     dataacquisition_action=new QAction("data acquisition",this);
     connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
 
+    stopacquisition_action= new QAction("stop acquisition",this);
+    connect(stopacquisition_action,SIGNAL(triggered()),this,SLOT(stopacquisition()));
+
 }
 
 void MainWindow::createmenus()//insert codes
@@ -218,3 +223,28 @@ void MainWindow::createdockwidget()
 }
 
 
+
+void RWThread::run(){
+    char RxBuffer[bufferlong];
+    datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+    QDataStream infile(datafile);
+    DWORD BytesReceived;
+    QMutex lock1,lock2;
+    int runnum=0;
+    while(runnum<10){
+        //加锁
+        //lock1.lock();
+        usb->SetTimeouts(5000,1000);
+
+        qDebug()<<usb->Read(RxBuffer,bufferlong,&BytesReceived);
+        //lock1.unlock();
+        //锁
+        //lock2.lock();
+        infile.writeRawData(RxBuffer,bufferlong);
+        //lock2.unlock();
+        runnum++;
+        //sleep(1);
+    }
+    datafile->close();
+
+}

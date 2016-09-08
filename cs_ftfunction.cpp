@@ -23,13 +23,13 @@ DWORD CS_ftfunction::getnumDEv()
 
 FT_STATUS CS_ftfunction::Open(int iDevice){
     this->m_pOpen =(CS_ftfunction::PtrToOpen)this->resolve("FT_Open");
-    qDebug("ok, Link to FT_Open is ok!");
     if(this->m_pOpen==NULL){
     qDebug("failed, Link to FT_Open is failed!");
     return FT_INVALID_HANDLE;
     }
     else
     {
+        qDebug("ok, Link to FT_Open is ok!");
         FT_STATUS open=(*m_pOpen)(iDevice,&m_ftHandle);
        if(open==FT_OK)isopen=true;
        return open;
@@ -59,12 +59,12 @@ FT_STATUS CS_ftfunction::ListDevices(PVOID pArg1, PVOID pArg2, DWORD dwFlags){
 
 FT_STATUS CS_ftfunction::Close(){
     this->m_pClose=(CS_ftfunction::PtrToClose)this->resolve("FT_Close");
-    qDebug("ok, Link to FT_Close is ok!");
     if(this->m_pClose ==NULL){
         qDebug("failed, Link to FT_Close is failed!");
         return FT_INVALID_HANDLE;
     }
     else{
+        qDebug("ok, Link to FT_Close is ok!");
         FT_STATUS close=(*m_pClose)(m_ftHandle);
         if(close==FT_OK)isopen=false;
         return close;
@@ -73,13 +73,15 @@ FT_STATUS CS_ftfunction::Close(){
 }
 
 FT_STATUS CS_ftfunction::SetBitMode(UCHAR ucMask, UCHAR ucMode){
-    this->m_pSetBitMode=(CS_ftfunction::PtrToSetBitMode)this->resolve("FT_SetBitmode");
+    this->m_pSetBitMode=(CS_ftfunction::PtrToSetBitMode)this->resolve("FT_SetBitMode");
     if(this->m_pSetBitMode ==NULL){
         qDebug("failed, Link to FT_SetBitmode is failed!");
         return FT_INVALID_HANDLE;
     }
-    else
+    else{
+        qDebug("ok, Link to FT_SetBitmode is ok!");
         return (*m_pSetBitMode)(m_ftHandle, ucMask, ucMode);
+    }
 }
 
 FT_STATUS CS_ftfunction::Read(LPVOID lpvBuffer, DWORD dwBuffSize, LPDWORD lpdwBytesRead){
@@ -88,8 +90,10 @@ FT_STATUS CS_ftfunction::Read(LPVOID lpvBuffer, DWORD dwBuffSize, LPDWORD lpdwBy
         qDebug("failed, Link to FT_Read is failed!");
         return FT_INVALID_HANDLE;
     }
-    else
+    else{
+        qDebug("ok, Link to FT_Read is ok!");
         return (*m_pRead)(m_ftHandle, lpvBuffer, dwBuffSize, lpdwBytesRead);
+    }
 }
 
 FT_STATUS CS_ftfunction::Write(LPVOID lpvBuffer, DWORD dwBuffSize, LPDWORD lpdwBytes){
@@ -128,8 +132,11 @@ FT_STATUS CS_ftfunction::SetTimeouts(ULONG dwReadTimeout, ULONG dwWriteTimeout){
         qDebug("failed, Link to FT_SetTimeouts is failed!");
         return FT_INVALID_HANDLE;
     }
-    else
+    else{
+
+        qDebug("ok, Link to FT_SetTimeouts is ok!");
         return (*m_pSetTimeouts)(m_ftHandle, dwReadTimeout, dwWriteTimeout);
+    }
 }
 
 FT_STATUS CS_ftfunction::GetQueueStatus(LPDWORD lpdwAmountInRxQueue){
