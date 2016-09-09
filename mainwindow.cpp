@@ -13,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
     createmenus();  //菜单栏
     createToolBars();//工具栏
     createdockwidget();//停靠部件
+
+    datafile=NULL;
+    rwthread1=NULL;
+    rwthread2=NULL;
 }
 
 MainWindow::~MainWindow()
@@ -102,33 +106,44 @@ void MainWindow::tdlas()
 /// \brief MainWindow::dataacquisition
 ///
 
-
-void MainWindow::dataacquisition()//数据采集动作
+void MainWindow::dataacquisition()//数据采集 action
 {
     statusdock->setVisible(true);//使停靠栏可见
 
     if(1){//usb.getnumDEv()
         if(1){//usb.isopened()
             QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
-            QString savedirectory = QFileDialog::getExistingDirectory(this,
+            //options |= QFileDialog::DontUseNativeDialog;
+            savedirectory = QFileDialog::getExistingDirectory(this,
                                                                       tr("Save Directory"),
-                                                                      "../",
+                                                                      "",
                                                                       options);
             if (savedirectory.isEmpty())
                 qDebug()<<"err";
             else{
                 ui->listWidget_2->addItem("save at "+savedirectory);
-                if(savedirectory=="C:/")ui->listWidget_2->addItem("do not use C:/ as saving position");
-
+                if(savedirectory=="C:/"){
+                    ui->listWidget_2->addItem("do not use C:/ as a saving position");
+                    ui->listWidget_2->addItem("change dir and try again");
+                    return;
+                }
                 QDateTime datetime=QDateTime::currentDateTime();//准备文件
                 QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
                 QDir::setCurrent(savedirectory);//准备文件
                 datafile=new QFile(dt+"_acquicition.dat");
                 //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-                //datafile->close();
-                //qDebug()<<datafile->exists();
+                lockthread=new QMutex;
 
-                RWThread *rwthread1= new RWThread(&usb,datafile,4096);
+                rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
+                connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
+                connect(this,&MainWindow::stopacquisition,rwthread1,&RWThread::stoprun);
+                connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
+
+                rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
+                connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
+                connect(this,&MainWindow::stopacquisition,rwthread2,&RWThread::stoprun);
+                connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
+
 
                 QByteArray TxBuffer;//准备写入usb的发送命令
                 QDataStream in(&TxBuffer, QIODevice::ReadWrite);
@@ -143,9 +158,7 @@ void MainWindow::dataacquisition()//数据采集动作
                 UCHAR MODE = 0x40;
                 usb.SetBitMode(MASK, MODE);
                 rwthread1->start();//开始线程吧
-
-                //rwthread1->wait();
-                //RWthread2.wait();
+                rwthread2->start();//开始线程吧
 
             }
         }
@@ -161,14 +174,47 @@ void MainWindow::dataacquisition()//数据采集动作
     ui->listWidget_2->scrollToBottom();
 }
 
-void MainWindow::stopacquisition()
+void MainWindow::stopdataacquisition()//停止数据采集 action
 {
+    emit stopacquisition(false);
 
+    if(datafile!=NULL){
+        rwthread1->wait();
+        rwthread2->wait();
+        datafile->open(QIODevice::ReadOnly);
+        QDataStream outfile(datafile);
+        QByteArray array;
+        QDataStream arrayin(&array,QIODevice::ReadWrite);
+        qint8 transfer;
+        while(!outfile.atEnd()){
+            outfile>>transfer;
+            arrayin<<transfer;
+        }
+
+        //qDebug()<<outfile.readRawData(s,4096);
+
+        QDateTime datetime=QDateTime::currentDateTime();//准备文件
+        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+        QDir::setCurrent(savedirectory);//准备文件
+        QFile *txtfile=new QFile(dt+"_acquicition.txt");
+        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+        QTextStream trantextfile(txtfile);
+        int i=0;
+        while(i<array.size()){
+
+            trantextfile<<(int)(array.at(i++));
+        }
+        datafile->close();
+        txtfile->flush();
+        txtfile->close();
+    }
 }
 
-void MainWindow::threadstatus(FT_STATUS st)
+void MainWindow::threadstatus(quint16 st)//slot
 {
-    ui->listWidget_2->addItem(usb.status.at(st));
+    QString label;
+    label=QString::number(st);
+    ui->listWidget_2->addItem(label);
     ui->listWidget_2->scrollToBottom();
 }
 
@@ -185,7 +231,7 @@ void MainWindow::createToolBars()
 
     tooldataacquisition=addToolBar("data_acquisition");
     tooldataacquisition->addAction(dataacquisition_action);
-    tooldataacquisition->addAction(stopacquisition_action);
+    tooldataacquisition->addAction(stopdataacquisition_action);
     //insert here
 
 }
@@ -204,8 +250,8 @@ void MainWindow::createaction()
     dataacquisition_action=new QAction("data acquisition",this);
     connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
 
-    stopacquisition_action= new QAction("stop acquisition",this);
-    connect(stopacquisition_action,SIGNAL(triggered()),this,SLOT(stopacquisition()));
+    stopdataacquisition_action= new QAction("stop data acquisition",this);
+    connect(stopdataacquisition_action,SIGNAL(triggered()),this,SLOT(stopdataacquisition()));
 
 }
 
@@ -225,26 +271,34 @@ void MainWindow::createdockwidget()
 
 
 void RWThread::run(){
-    char RxBuffer[bufferlong];
+    char RxBuffer[bufferlong];ZeroMemory(RxBuffer,bufferlong);
     datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
     QDataStream infile(datafile);
     DWORD BytesReceived;
     QMutex lock1,lock2;
+    usb->SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
     int runnum=0;
-    while(runnum<10){
+    while(runflag==true){
         //加锁
-        //lock1.lock();
-        usb->SetTimeouts(5000,1000);
+        lock->lock();
 
-        qDebug()<<usb->Read(RxBuffer,bufferlong,&BytesReceived);
-        //lock1.unlock();
+        usb->Read(RxBuffer,bufferlong,&BytesReceived);
+        emit readbuffer(BytesReceived);
+        sleep(1);
+        //if(mode==MainWindow::ECT);//发送信号绘图，计算
+        lock->unlock();
         //锁
         //lock2.lock();
         infile.writeRawData(RxBuffer,bufferlong);
         //lock2.unlock();
         runnum++;
-        //sleep(1);
     }
+    datafile->flush();
     datafile->close();
 
+}
+
+void RWThread::stoprun(bool flag)
+{
+    if(this->isRunning())runflag=flag;
 }

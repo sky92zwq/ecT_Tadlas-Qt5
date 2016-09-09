@@ -17,6 +17,35 @@
 namespace Ui {
 class MainWindow;
 }
+/// \brief The RWThread class
+///
+class RWThread : public QThread
+  {
+      Q_OBJECT
+public:
+    explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk)
+        :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){}
+    void run();
+          /* ... here is the expensive or blocking operation ... */
+signals:
+    void resultReady(const QString &s);
+
+signals:
+
+    void rwcount();
+    void readbuffer(quint16);
+public slots:
+    void stoprun(bool flag);
+
+private:
+    CS_ftfunction *usb;
+    QFile *datafile;
+    QMutex *lock;
+    bool runflag;
+    uint count;//infinite how?
+    const int bufferlong;
+    quint8 shangweijibuffer[100];
+};
 
 /// \brief The MainWindow class
 ///
@@ -44,14 +73,15 @@ protected slots:
 
     void dataacquisition();
 
-    void stopacquisition();
+    void stopdataacquisition();
 private slots:
     void acquisitioncount(){;}
 
-    void threadstatus(FT_STATUS st);//看看子线程的状态
+    void threadstatus(quint16 st);//看看子线程的状态
 signals:
 
     void startacquisition(CS_ftfunction &usb,QString savedirectory);
+    void stopacquisition(bool);
 
 private:
     void createToolBars();
@@ -67,6 +97,7 @@ private:
 
     QDateTime datetime;
     QFile *datafile;
+    QString savedirectory;
 private:
 
     QToolBar *toolusb;
@@ -76,46 +107,25 @@ private:
     QAction *closeusb_action;
     QAction *tdlas_action;
     QAction *dataacquisition_action;
-    QAction *stopacquisition_action;
+    QAction *stopdataacquisition_action;
 private:
     QDockWidget *statusdock;
 public:
-    QThread RWthread1;
-    QThread RWthread2;
+    QMutex *lockthread;
+    RWThread *rwthread1;
+    RWThread *rwthread2;
 
     QByteArray RWbyte;
+public:
+    enum{
+        ECT,
+        TDlas
+    };
+    int mode;
 
 };
 
 
-/// \brief The RWThread class
-///
-class RWThread : public QThread
-  {
-      Q_OBJECT
-public:
-    explicit RWThread(CS_ftfunction *u, QFile *df,const int bl)
-        :usb(u),datafile(df),bufferlong(bl),QThread(){}
-    void run();
-          /* ... here is the expensive or blocking operation ... */
-signals:
-    void resultReady(const QString &s);
-
-signals:
-
-    void rwcount();
-    void readbuffer(FT_STATUS);
-
-private:
-    CS_ftfunction *usb;
-    QFile *datafile;
-    QString savedirectory;
-    uint count;//infinite how?
-    const int bufferlong;
-    quint8 shangweijibuffer[100];
-
-
-  };
 
 
 
