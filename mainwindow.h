@@ -25,8 +25,8 @@ class RWThread : public QThread
 public:
     explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk)
         :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){}
-    void run();
-          /* ... here is the expensive or blocking operation ... */
+    void run(); /* ... here is the expensive or blocking operation ... */
+
 signals:
     void resultReady(const QString &s);
 
