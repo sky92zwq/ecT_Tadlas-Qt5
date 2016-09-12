@@ -133,12 +133,12 @@ void MainWindow::dataacquisition()//数据采集 action
                 datafile=new QFile(dt+"_acquicition.dat");
                 //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
                 lockthread=new QMutex;
-
+                //THread 1
                 rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
                 connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
                 connect(this,&MainWindow::stopacquisition,rwthread1,&RWThread::stoprun);
                 connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
-
+                //Thread2
                 rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
                 connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
                 connect(this,&MainWindow::stopacquisition,rwthread2,&RWThread::stoprun);
