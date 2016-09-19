@@ -102,8 +102,11 @@ FT_STATUS CS_ftfunction::Write(LPVOID lpvBuffer, DWORD dwBuffSize, LPDWORD lpdwB
         qDebug("failed, Link to FT_Write is failed!");
         return FT_INVALID_HANDLE;
     }
-    else
+    else{
+        qDebug("ok, Link to FT_Write is ok!");
         return (*m_pWrite)(m_ftHandle, lpvBuffer, dwBuffSize, lpdwBytes);
+
+    }
 }
 
 FT_STATUS CS_ftfunction::ResetDevice(){

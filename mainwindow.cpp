@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
+#include "tdlasdialog.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -17,6 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
     datafile=NULL;
     rwthread1=NULL;
     rwthread2=NULL;
+
+    mode=ECT;
+    ECT_action->setCheckable(true);
+    ECT_action->setChecked(true);
+    tdlas_action->setChecked(false);
+    startdataacquisition_action->setEnabled(false);
+    stopdataacquisition_action->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -24,15 +32,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-//void MainWindow::on_lineEdit_editingFinished()
-//{
-//    QString strread;
-//    strread = ui->lineEdit->text();
-//    ui->listWidget->setUpdatesEnabled(false);
-//    ui->listWidget->addItem(strread);
-
-//}
 
 void MainWindow::on_open_clicked()
 {
@@ -99,8 +98,29 @@ void MainWindow::closeusb()//closeusb action
 
 void MainWindow::tdlas()
 {
+    mode=TDlas;
+
+    tdlas_action->setChecked(true);
+    ECT_action->setChecked(false);
+
+    createtdlasview();
+
     tdlasDialog tdlasdl;
+    connect(this,&MainWindow::transmitusb,&tdlasdl,&tdlasDialog::acceptusb);
+    connect(&tdlasdl,&tdlasDialog::mystatus,this,&MainWindow::childrenWidstatus);
+    emit transmitusb(&usb);
     tdlasdl.exec();
+}
+
+void MainWindow::Ect()
+{
+    mode=ECT;
+
+    ECT_action->setChecked(true);
+
+    createectview();
+
+    tdlas_action->setChecked(false);
 }
 
 /// \brief MainWindow::dataacquisition
@@ -118,8 +138,10 @@ void MainWindow::dataacquisition()//数据采集 action
                                                                       tr("Save Directory"),
                                                                       "",
                                                                       options);
-            if (savedirectory.isEmpty())
+            if (savedirectory.isEmpty()){
                 qDebug()<<"err";
+                return;
+            }
             else{
                 ui->listWidget_2->addItem("save at "+savedirectory);
                 if(savedirectory=="C:/"){
@@ -127,39 +149,6 @@ void MainWindow::dataacquisition()//数据采集 action
                     ui->listWidget_2->addItem("change dir and try again");
                     return;
                 }
-                QDateTime datetime=QDateTime::currentDateTime();//准备文件
-                QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
-                QDir::setCurrent(savedirectory);//准备文件
-                datafile=new QFile(dt+"_acquicition.dat");
-                //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-                lockthread=new QMutex;
-                //THread 1
-                rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
-                connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
-                connect(this,&MainWindow::stopacquisition,rwthread1,&RWThread::stoprun);
-                connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
-                //Thread2
-                rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
-                connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
-                connect(this,&MainWindow::stopacquisition,rwthread2,&RWThread::stoprun);
-                connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
-
-
-                QByteArray TxBuffer;//准备写入usb的发送命令
-                QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-                in<<(quint16)0x8800<<(quint16)4096;
-                DWORD BytesReceived;//向下写入发送命令
-
-                if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
-                    ui->listWidget_2->addItem("发送命令写入成功");
-                qDebug()<<BytesReceived;
-
-                UCHAR MASK = 0xff;
-                UCHAR MODE = 0x40;
-                usb.SetBitMode(MASK, MODE);
-                rwthread1->start();//开始线程吧
-                rwthread2->start();//开始线程吧
-
             }
         }
         else{
@@ -172,42 +161,118 @@ void MainWindow::dataacquisition()//数据采集 action
     }
 
     ui->listWidget_2->scrollToBottom();
+    startdataacquisition_action->setEnabled(true);
+
 }
 
 void MainWindow::stopdataacquisition()//停止数据采集 action
 {
-    emit stopacquisition(false);
+    stopdataacquisition_action->setEnabled(false);
 
-    if(datafile!=NULL){
+    //RunSyn=0;
+    emit stopacquisition1(false);
+    emit stopacquisition2(false);
+    if(datafile!=NULL&&rwthread1!=NULL){
+
         rwthread1->wait();
         rwthread2->wait();
+
+
         datafile->open(QIODevice::ReadOnly);
         QDataStream outfile(datafile);
-        QByteArray array;
-        QDataStream arrayin(&array,QIODevice::ReadWrite);
-        qint8 transfer;
-        while(!outfile.atEnd()){
-            outfile>>transfer;
-            arrayin<<transfer;
-        }
-
-        //qDebug()<<outfile.readRawData(s,4096);
 
         QDateTime datetime=QDateTime::currentDateTime();//准备文件
         QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
         QDir::setCurrent(savedirectory);//准备文件
-        QFile *txtfile=new QFile(dt+"_acquicition.txt");
+        QFile *txtfile=new QFile(dt+"_acquisition.txt");
         txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         QTextStream trantextfile(txtfile);
-        int i=0;
-        while(i<array.size()){
-
-            trantextfile<<(int)(array.at(i++));
+        qint16 transfer;
+        while(!outfile.atEnd()){
+            outfile>>transfer;
+            trantextfile<<transfer<<' ';
         }
+
         datafile->close();
         txtfile->flush();
         txtfile->close();
+
+        QByteArray TxBuffer;//准备写入usb的发送命令
+        TxBuffer.clear();
+        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
+        DWORD BytesReceived;//向下写入发送命令
+
+        if(mode==ECT){
+            in<<(quint8)0x77;
+            qDebug()<<TxBuffer.data();
+            if(usb.Write(TxBuffer.data(),1,&BytesReceived)==FT_OK&&BytesReceived==1)
+                ui->listWidget_2->addItem("停止发送命令写入成功");
+            qDebug()<<BytesReceived;
+        }
     }
+    rwthread1=NULL;
+    rwthread2=NULL;
+    startdataacquisition_action->setEnabled(true);
+}
+
+void MainWindow::startdataacquisition()//开始采集
+{
+    if(usb.isopened()){
+
+        startdataacquisition_action->setEnabled(false);
+
+        QDateTime datetime=QDateTime::currentDateTime();//准备文件
+        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+        QDir::setCurrent(savedirectory);//准备文件
+        datafile=new QFile(dt+"_acquisition.bin");
+        //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+
+
+        lockthread=new QMutex;
+        //THread 1
+        rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
+        connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
+        connect(this,&MainWindow::stopacquisition1,rwthread1,&RWThread::stoprun,Qt::DirectConnection);
+        connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
+        //Thread2
+        rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
+        connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
+        connect(this,&MainWindow::stopacquisition2,rwthread2,&RWThread::stoprun,Qt::DirectConnection);
+        connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
+
+
+        QByteArray TxBuffer;//准备写入usb的发送命令
+        TxBuffer.clear();
+        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
+        DWORD BytesReceived;//向下写入发送命令
+        if(mode==TDlas){
+            in<<(quint16)0x8800<<(quint16)4096;
+            if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
+                ui->listWidget_2->addItem("发送命令写入成功");
+            qDebug()<<BytesReceived;
+    //    UCHAR MASK = 0xff;
+    //    UCHAR MODE = 0x40;
+    //    usb.SetBitMode(MASK, MODE);
+
+        }
+        if(mode==ECT){
+            in<<(quint8)0x88;
+            qDebug()<<TxBuffer.data();
+            if(usb.Write(TxBuffer.data(),1,&BytesReceived)==FT_OK&&BytesReceived==1)
+                ui->listWidget_2->addItem("发送命令写入成功");
+            qDebug()<<BytesReceived;
+            usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
+        }
+
+
+        rwthread1->start();//开始线程吧
+        rwthread2->start();//开始线程吧
+
+        stopdataacquisition_action->setEnabled(true);
+    }
+    else
+        ui->listWidget_2->addItem("open usb first");
+    ui->listWidget_2->scrollToBottom();
 }
 
 void MainWindow::threadstatus(quint16 st)//slot
@@ -218,12 +283,22 @@ void MainWindow::threadstatus(quint16 st)//slot
     ui->listWidget_2->scrollToBottom();
 }
 
+void MainWindow::childrenWidstatus(QString &str)//查看 子窗口 状态
+{
+    ui->listWidget_2->addItem(str);
+    ui->listWidget_2->scrollToBottom();
+}
+
 
 ///
 /// \brief MainWindow::creating...............
 ///
 void MainWindow::createToolBars()
 {
+    toolmode=addToolBar("mode");
+    toolmode->addAction(ECT_action);
+    toolmode->addAction(tdlas_action);
+
     toolusb=addToolBar("usb");
     toolusb->addAction(openusb_action);
     toolusb->addAction(closeusb_action);
@@ -231,6 +306,7 @@ void MainWindow::createToolBars()
 
     tooldataacquisition=addToolBar("data_acquisition");
     tooldataacquisition->addAction(dataacquisition_action);
+    tooldataacquisition->addAction(startdataacquisition_action);
     tooldataacquisition->addAction(stopdataacquisition_action);
     //insert here
 
@@ -246,18 +322,26 @@ void MainWindow::createaction()
 
     tdlas_action=new QAction("tdlas",this);
     connect(tdlas_action,SIGNAL(triggered()),this,SLOT(tdlas()));
+    tdlas_action->setCheckable(true);
 
-    dataacquisition_action=new QAction("data acquisition",this);
+    ECT_action= new QAction("ECT",this);
+    connect(ECT_action,SIGNAL(triggered()),this,SLOT(Ect()));
+    ECT_action->setCheckable(true);
+
+    dataacquisition_action=new QAction("Dir of data acquisition",this);
     connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
 
-    stopdataacquisition_action= new QAction("stop data acquisition",this);
+    stopdataacquisition_action= new QAction("stop",this);
     connect(stopdataacquisition_action,SIGNAL(triggered()),this,SLOT(stopdataacquisition()));
 
+    startdataacquisition_action= new QAction("start",this);
+    connect(startdataacquisition_action,SIGNAL(triggered()),this,SLOT(startdataacquisition()));
 }
 
 void MainWindow::createmenus()//insert codes
 {
     ui->menu->addAction(tdlas_action);
+    ui->menu->addAction(ECT_action);
     ui->menu->addAction(openusb_action);
 }
 
@@ -268,37 +352,44 @@ void MainWindow::createdockwidget()
     addDockWidget(Qt::RightDockWidgetArea,statusdock);
 }
 
+void MainWindow::createtdlasview()
+{
 
+}
+
+void MainWindow::createectview()
+{
+
+}
+
+/// \brief RWThread::.........................
+///
 
 void RWThread::run(){
-    char RxBuffer[bufferlong];ZeroMemory(RxBuffer,bufferlong);
-    datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-    QDataStream infile(datafile);
-    DWORD BytesReceived;
-    QMutex lock1,lock2;
-    usb->SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
-    int runnum=0;
+
     while(runflag==true){
         //加锁
         lock->lock();
 
         usb->Read(RxBuffer,bufferlong,&BytesReceived);
-        emit readbuffer(BytesReceived);
-        sleep(1);
+        //emit readbuffer(BytesReceived);
+        //msleep(100);
         //if(mode==MainWindow::ECT);//发送信号绘图，计算
         lock->unlock();
         //锁
         //lock2.lock();
-        infile.writeRawData(RxBuffer,bufferlong);
+        infile->writeRawData(RxBuffer,bufferlong);
         //lock2.unlock();
-        runnum++;
+        //runnum++;
     }
     datafile->flush();
     datafile->close();
+    free(RxBuffer);
 
 }
 
 void RWThread::stoprun(bool flag)
 {
     if(this->isRunning())runflag=flag;
+
 }

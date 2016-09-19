@@ -12,6 +12,7 @@
 #include <qthread.h>
 #include <qreadwritelock.h>
 #include <qmutex.h>
+#include <qmath.h>
 
 
 namespace Ui {
@@ -24,7 +25,15 @@ class RWThread : public QThread
       Q_OBJECT
 public:
     explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk)
-        :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){}
+        :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){
+
+        //ZeroMemory(RxBuffer,bufferlong);
+        RxBuffer=(char*)malloc(bufferlong+1);
+        datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+        infile= new QDataStream(datafile);
+
+        //int runnum=0;
+    }
     void run(); /* ... here is the expensive or blocking operation ... */
 
 signals:
@@ -42,9 +51,13 @@ private:
     QFile *datafile;
     QMutex *lock;
     bool runflag;
+
     uint count;//infinite how?
     const int bufferlong;
     quint8 shangweijibuffer[100];
+    char * RxBuffer;
+    QDataStream *infile;
+    DWORD BytesReceived;
 };
 
 /// \brief The MainWindow class
@@ -71,17 +84,26 @@ protected slots:
 
     void tdlas();
 
+    void Ect();
+
     void dataacquisition();
 
     void stopdataacquisition();
+
+    void startdataacquisition();
 private slots:
     void acquisitioncount(){;}
 
     void threadstatus(quint16 st);//看看子线程的状态
+
+    void childrenWidstatus(QString &str);//看子窗口
 signals:
 
     void startacquisition(CS_ftfunction &usb,QString savedirectory);
-    void stopacquisition(bool);
+    void stopacquisition1(bool);
+    void stopacquisition2(bool);
+signals:
+    void transmitusb(CS_ftfunction *);
 
 private:
     void createToolBars();
@@ -92,6 +114,9 @@ private:
 
     void createdockwidget();
 
+    void createtdlasview();
+
+    void createectview();
 private:
     Ui::MainWindow *ui;
 
@@ -99,15 +124,17 @@ private:
     QFile *datafile;
     QString savedirectory;
 private:
-
+    QToolBar *toolmode;
     QToolBar *toolusb;
     QToolBar *tooldataacquisition;
 
     QAction *openusb_action;
     QAction *closeusb_action;
     QAction *tdlas_action;
+    QAction *ECT_action;
     QAction *dataacquisition_action;
     QAction *stopdataacquisition_action;
+    QAction *startdataacquisition_action;
 private:
     QDockWidget *statusdock;
 public:
@@ -117,11 +144,14 @@ public:
 
     QByteArray RWbyte;
 public:
-    enum{
+    enum ET{
         ECT,
         TDlas
     };
-    int mode;
+    ET mode;
+    int RunSyn;
+public:
+    inline bool usbwrite();
 
 };
 
