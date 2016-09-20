@@ -178,30 +178,32 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
         rwthread2->wait();
 
 
-        datafile->open(QIODevice::ReadOnly);
-        QDataStream outfile(datafile);
+//        datafile->open(QIODevice::ReadOnly);
+//        QDataStream outfile(datafile);
 
-        QDateTime datetime=QDateTime::currentDateTime();//准备文件
-        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
-        QDir::setCurrent(savedirectory);//准备文件
-        QFile *txtfile=new QFile(dt+"_acquisition.txt");
-        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-        QTextStream trantextfile(txtfile);
-        qint16 transfer;
-        while(!outfile.atEnd()){
-            outfile>>transfer;
-            trantextfile<<transfer<<' ';
-        }
+//        QDateTime datetime=QDateTime::currentDateTime();//准备文件
+//        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+//        QDir::setCurrent(savedirectory);//准备文件
+//        QFile *txtfile=new QFile(dt+"_acquisition.txt");
+//        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+//        QTextStream trantextfile(txtfile);
+//        qint16 transfer;
+//        while(!outfile.atEnd()){
+//            outfile>>transfer;
+//            trantextfile<<transfer<<' ';
+//        }
 
         datafile->close();
-        txtfile->flush();
-        txtfile->close();
+//        txtfile->flush();
+//        txtfile->close();
 
-        QByteArray TxBuffer;//准备写入usb的发送命令
+        QByteArray TxBuffer;//准备写入usb的停止发送命令
         TxBuffer.clear();
         QDataStream in(&TxBuffer, QIODevice::ReadWrite);
         DWORD BytesReceived;//向下写入发送命令
-
+        if(mode==TDlas){
+            ;
+        }
         if(mode==ECT){
             in<<(quint8)0x77;
             qDebug()<<TxBuffer.data();
@@ -221,11 +223,16 @@ void MainWindow::startdataacquisition()//开始采集
 
         startdataacquisition_action->setEnabled(false);
 
-        QDateTime datetime=QDateTime::currentDateTime();//准备文件
+        QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
         QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
-        QDir::setCurrent(savedirectory);//准备文件
-        datafile=new QFile(dt+"_acquisition.bin");
+        QDir::setCurrent(savedirectory);
+        datafile=new QFile(dt+"_acquisition.bin");//准备文件
         //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+         datetime=QDateTime::currentDateTime();//准备文件txt
+         dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+        QDir::setCurrent(savedirectory);
+        QFile *txtfile=new QFile(dt+"_acquisition.txt");
+        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);//准备文件
 
 
         lockthread=new QMutex;
@@ -241,18 +248,20 @@ void MainWindow::startdataacquisition()//开始采集
         connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
 
 
-        QByteArray TxBuffer;//准备写入usb的发送命令
+        QByteArray TxBuffer;//准备工作：写入usb的发送命令
         TxBuffer.clear();
         QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        DWORD BytesReceived;//向下写入发送命令
+        DWORD BytesReceived;//end准备
+
         if(mode==TDlas){
             in<<(quint16)0x8800<<(quint16)4096;
             if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
                 ui->listWidget_2->addItem("发送命令写入成功");
             qDebug()<<BytesReceived;
-    //    UCHAR MASK = 0xff;
-    //    UCHAR MODE = 0x40;
-    //    usb.SetBitMode(MASK, MODE);
+    //      UCHAR MASK = 0xff;
+    //      UCHAR MODE = 0x40;
+    //      usb.SetBitMode(MASK, MODE);
+            usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
 
         }
         if(mode==ECT){
@@ -362,34 +371,4 @@ void MainWindow::createectview()
 
 }
 
-/// \brief RWThread::.........................
-///
 
-void RWThread::run(){
-
-    while(runflag==true){
-        //加锁
-        lock->lock();
-
-        usb->Read(RxBuffer,bufferlong,&BytesReceived);
-        //emit readbuffer(BytesReceived);
-        //msleep(100);
-        //if(mode==MainWindow::ECT);//发送信号绘图，计算
-        lock->unlock();
-        //锁
-        //lock2.lock();
-        infile->writeRawData(RxBuffer,bufferlong);
-        //lock2.unlock();
-        //runnum++;
-    }
-    datafile->flush();
-    datafile->close();
-    free(RxBuffer);
-
-}
-
-void RWThread::stoprun(bool flag)
-{
-    if(this->isRunning())runflag=flag;
-
-}

@@ -13,52 +13,12 @@
 #include <qreadwritelock.h>
 #include <qmutex.h>
 #include <qmath.h>
-
+#include "mythreads.h"
 
 namespace Ui {
 class MainWindow;
 }
-/// \brief The RWThread class
-///
-class RWThread : public QThread
-  {
-      Q_OBJECT
-public:
-    explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk)
-        :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){
 
-        //ZeroMemory(RxBuffer,bufferlong);
-        RxBuffer=(char*)malloc(bufferlong+1);
-        datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-        infile= new QDataStream(datafile);
-
-        //int runnum=0;
-    }
-    void run(); /* ... here is the expensive or blocking operation ... */
-
-signals:
-    void resultReady(const QString &s);
-
-signals:
-
-    void rwcount();
-    void readbuffer(quint16);
-public slots:
-    void stoprun(bool flag);
-
-private:
-    CS_ftfunction *usb;
-    QFile *datafile;
-    QMutex *lock;
-    bool runflag;
-
-    uint count;//infinite how?
-    const int bufferlong;
-    quint8 shangweijibuffer[100];
-    char * RxBuffer;
-    QDataStream *infile;
-    DWORD BytesReceived;
-};
 
 /// \brief The MainWindow class
 ///
@@ -141,6 +101,7 @@ public:
     QMutex *lockthread;
     RWThread *rwthread1;
     RWThread *rwthread2;
+    processThread *processthread;
 
     QByteArray RWbyte;
 public:
