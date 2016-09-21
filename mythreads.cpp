@@ -13,21 +13,29 @@ void RWThread::run(){
             lock->lock();
             usb->Read(RxBuffer,bufferlong,&BytesReceived);
             //msleep(100);
-            //if(mode==MainWindow::ECT);//发送信号绘图，计算
             lock->unlock();
             //锁
             //lock2.lock();
             infile->writeRawData(RxBuffer,bufferlong);
             //lock2.unlock();
             //runnum++;
-            emit readbuffer(BytesReceived);
+            emit sigECTtransfer(RxBuffer,bufferlong);
             break;
         case TDlas:
+            lock->lock();
+            usb->Read(RxBuffer,bufferlong,&BytesReceived);
+            //msleep(100);
+            lock->unlock();
+            //锁
+            //lock2.lock();
+            infile->writeRawData(RxBuffer,bufferlong);
+            //lock2.unlock();
+            emit sigTDlastransfer(RxBuffer,bufferlong);
             break;
         }
     }
     datafile->flush();
-    datafile->close();
+    //datafile->close();
     free(RxBuffer);
 
 }
@@ -38,31 +46,22 @@ void RWThread::stoprun(bool flag)
 
 }
 
-/// \brief processThread::run
+/// \brief processThread::............................
 ///
-void processThread::run()
+void processThreadobj::transferforECTdrawing(char *buffer, int bufferlong)
 {
-    switch (mode){
-    case ECT:
-        while(!outfile->atEnd()){
-            outfile->operator >>(transfer);
-            trantextfile->operator <<(transfer)<<' ';
-            qDebug()<<transfer;
-            if (count ==1024/2){
-                //emit re;//1024
-                count=0;
-            }
-            count++;
-        }
-        break;
-
-    case TDlas:
-        break;
-
+//    QByteArray bytearray(buffer,bufferlong);
+//    QDataStream outbytearray(&bytearray,QIODevice::ReadOnly);
+//    outbytearray>>transfer;
+    for(int i=0;i<bufferlong;){
+        transfer=buffer[i]*255+buffer[i+1];
+        trantextfile<<transfer<<' ';
+        i+=2;
     }
 
 
-    datafile->close();
-    txtfile->flush();
-    txtfile->close();
+}
+void processThreadobj::transferforTDlasdrawing(char *buffer, int bufferlong)
+{
+;
 }

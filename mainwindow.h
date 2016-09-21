@@ -82,6 +82,7 @@ private:
 
     QDateTime datetime;
     QFile *datafile;
+    QFile *txtfile;
     QString savedirectory;
 private:
     QToolBar *toolmode;
@@ -101,7 +102,8 @@ public:
     QMutex *lockthread;
     RWThread *rwthread1;
     RWThread *rwthread2;
-    processThread *processthread;
+    processThreadobj *processthreadobj;
+    QThread processthread;
 
     QByteArray RWbyte;
 public:

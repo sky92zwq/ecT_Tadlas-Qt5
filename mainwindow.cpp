@@ -192,10 +192,10 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
 //            outfile>>transfer;
 //            trantextfile<<transfer<<' ';
 //        }
-
+        processthread.terminate();
         datafile->close();
-//        txtfile->flush();
-//        txtfile->close();
+        txtfile->flush();
+        txtfile->close();
 
         QByteArray TxBuffer;//准备写入usb的停止发送命令
         TxBuffer.clear();
@@ -219,33 +219,47 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
 
 void MainWindow::startdataacquisition()//开始采集
 {
-    if(usb.isopened()){
+    if(1){//usb.isopened()
 
         startdataacquisition_action->setEnabled(false);
 
         QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
         QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
         QDir::setCurrent(savedirectory);
-        datafile=new QFile(dt+"_acquisition.bin");//准备文件
+        if(mode==ECT)datafile=new QFile("ECT"+dt+"_acquisition.bin");//准备文件
+        if(mode==TDlas)datafile=new QFile("TDlas"+dt+"_acquisition.bin");//准备文件
         //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
          datetime=QDateTime::currentDateTime();//准备文件txt
          dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
         QDir::setCurrent(savedirectory);
-        QFile *txtfile=new QFile(dt+"_acquisition.txt");
+        if(mode==ECT)txtfile=new QFile("ECT"+dt+"_acquisition.txt");
+        if(mode==TDlas)txtfile=new QFile("TDlas"+dt+"_acquisition.txt");
         txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);//准备文件
 
 
         lockthread=new QMutex;
+        RWThread::ET m;processThreadobj::ET mm;
+        if(mode==ECT){m=RWThread::ECT;mm=processThreadobj::ECT;}
+        if(mode==TDlas){m=RWThread::TDlas;mm=processThreadobj::TDlas;}
         //THread 1
-        rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
+        rwthread1= new RWThread(&usb,datafile,4096,true,lockthread,m);
         connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
         connect(this,&MainWindow::stopacquisition1,rwthread1,&RWThread::stoprun,Qt::DirectConnection);
         connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
         //Thread2
-        rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
+        rwthread2= new RWThread(&usb,datafile,4096,true,lockthread,m);
         connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
         connect(this,&MainWindow::stopacquisition2,rwthread2,&RWThread::stoprun,Qt::DirectConnection);
         connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
+        //processThread
+        processthreadobj=new processThreadobj(datafile,4096,true,txtfile,mm);
+        processthreadobj->moveToThread(&processthread);
+        connect(rwthread1,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
+        connect(rwthread1,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
+        connect(rwthread2,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
+        connect(rwthread2,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
+        connect(&processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
+
 
 
         QByteArray TxBuffer;//准备工作：写入usb的发送命令
@@ -258,9 +272,9 @@ void MainWindow::startdataacquisition()//开始采集
             if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
                 ui->listWidget_2->addItem("发送命令写入成功");
             qDebug()<<BytesReceived;
-    //      UCHAR MASK = 0xff;
-    //      UCHAR MODE = 0x40;
-    //      usb.SetBitMode(MASK, MODE);
+            UCHAR MASK = 0xff;
+            UCHAR MODE = 0x40;
+            usb.SetBitMode(MASK, MODE);
             usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
 
         }
@@ -276,6 +290,7 @@ void MainWindow::startdataacquisition()//开始采集
 
         rwthread1->start();//开始线程吧
         rwthread2->start();//开始线程吧
+        processthread.start();
 
         stopdataacquisition_action->setEnabled(true);
     }
