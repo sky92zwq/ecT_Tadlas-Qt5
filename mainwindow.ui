@@ -24,6 +24,22 @@
      </rect>
     </property>
    </widget>
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>130</y>
+      <width>251</width>
+      <height>211</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -48,13 +64,13 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QMenu" name="menuHaiyou">
+   <widget class="QMenu" name="menureconstruct">
     <property name="title">
-     <string>haiyou</string>
+     <string>reconstruct</string>
     </property>
    </widget>
    <addaction name="menu"/>
-   <addaction name="menuHaiyou"/>
+   <addaction name="menureconstruct"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionUsb">

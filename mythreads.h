@@ -10,6 +10,7 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qmath.h>
+#include <sys/time.h>
 
 
 /// \brief The RWThread class
@@ -28,9 +29,10 @@ public:
     explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk,ET m)
         :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),mode(m),QThread(){
         //ZeroMemory(RxBuffer,bufferlong);
-        RxBuffer=(char*)malloc(bufferlong+1);
+        RxBuffer=(char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
         datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         infile= new QDataStream(datafile);
+        count=0;
 
     }
     void run(); /* ... here is the expensive or blocking operation ... */
@@ -39,7 +41,7 @@ signals:
     void sigTDlastransfer(char*,int );
 signals:
     void rwcount();
-    void readbuffer(quint16 st);
+    void readbuffer(double st);
 public slots:
     void stoprun(bool flag);
 private:
@@ -54,11 +56,28 @@ private:
     char * RxBuffer;
     QDataStream *infile;
     DWORD BytesReceived;
+    LARGE_INTEGER litmp;
+    LONGLONG Qpart1,Qpart2,Useingtime;
+    double dfMinus,dfFreq,dfTime;
+};
+///
+/// \brief The processThread class...........................
+///
+class processThread:public QThread
+{
+public:
+    processThread(): QThread() {}
+    void run();
+
 };
 
 ///
-/// \brief The processThread class
+/// \brief The processThread class............................
 ///
+struct argfordraw{
+QVector<qint16> tran;
+qint16  maxtransfer,mintransfer;
+};
 class processThreadobj : public QObject
 {
     Q_OBJECT
@@ -76,9 +95,6 @@ public:
         //ZeroMemory(RxBuffer,bufferlong);
         count=0;
 
-        datafile->open(QIODevice::ReadOnly);
-        outfile.setDevice(datafile);
-
         txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         trantextfile.setDevice(txtfile);
     }
@@ -87,6 +103,10 @@ public:
 signals:
 
     void readbuffer(quint16);
+
+    void sigdrawECTusbdata(argfordraw *);
+
+    void sigdrawTDlasusbdata(argfordraw *);
 
 private:
     QFile *datafile;
@@ -101,6 +121,8 @@ private:
     qint16 transfer;
 
     int count;
+    argfordraw tranarg;
+
 public slots:
     void transferforECTdrawing(char*buffer, int bufferlong);
     void transferforTDlasdrawing(char*buffer, int bufferlong);

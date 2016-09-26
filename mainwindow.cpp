@@ -18,13 +18,17 @@ MainWindow::MainWindow(QWidget *parent) :
     datafile=NULL;
     rwthread1=NULL;
     rwthread2=NULL;
+    savedirectory="./";
 
     mode=ECT;
     ECT_action->setCheckable(true);
     ECT_action->setChecked(true);
     tdlas_action->setChecked(false);
-    startdataacquisition_action->setEnabled(false);
     stopdataacquisition_action->setEnabled(false);
+
+    QHBoxLayout *mainlayout=new QHBoxLayout(this);
+    paintusb=new myPaintusb(ui->frame);
+    mainlayout->addWidget(paintusb);
 }
 
 MainWindow::~MainWindow()
@@ -134,16 +138,17 @@ void MainWindow::dataacquisition()//数据采集 action
         if(1){//usb.isopened()
             QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
             //options |= QFileDialog::DontUseNativeDialog;
-            savedirectory = QFileDialog::getExistingDirectory(this,
+            currentdirectory = QFileDialog::getExistingDirectory(this,
                                                                       tr("Save Directory"),
                                                                       "",
                                                                       options);
-            if (savedirectory.isEmpty()){
+            if (currentdirectory.isEmpty()){
                 qDebug()<<"err";
                 return;
             }
             else{
-                ui->listWidget_2->addItem("save at "+savedirectory);
+                savedirectory=currentdirectory;
+
                 if(savedirectory=="C:/"){
                     ui->listWidget_2->addItem("do not use C:/ as a saving position");
                     ui->listWidget_2->addItem("change dir and try again");
@@ -161,7 +166,6 @@ void MainWindow::dataacquisition()//数据采集 action
     }
 
     ui->listWidget_2->scrollToBottom();
-    startdataacquisition_action->setEnabled(true);
 
 }
 
@@ -174,25 +178,10 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
     emit stopacquisition2(false);
     if(datafile!=NULL&&rwthread1!=NULL){
 
+        processthread->quit();
         rwthread1->wait();
         rwthread2->wait();
 
-
-//        datafile->open(QIODevice::ReadOnly);
-//        QDataStream outfile(datafile);
-
-//        QDateTime datetime=QDateTime::currentDateTime();//准备文件
-//        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
-//        QDir::setCurrent(savedirectory);//准备文件
-//        QFile *txtfile=new QFile(dt+"_acquisition.txt");
-//        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-//        QTextStream trantextfile(txtfile);
-//        qint16 transfer;
-//        while(!outfile.atEnd()){
-//            outfile>>transfer;
-//            trantextfile<<transfer<<' ';
-//        }
-        processthread.terminate();
         datafile->close();
         txtfile->flush();
         txtfile->close();
@@ -212,8 +201,7 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
             qDebug()<<BytesReceived;
         }
     }
-    rwthread1=NULL;
-    rwthread2=NULL;
+
     startdataacquisition_action->setEnabled(true);
 }
 
@@ -222,18 +210,19 @@ void MainWindow::startdataacquisition()//开始采集
     if(1){//usb.isopened()
 
         startdataacquisition_action->setEnabled(false);
+        ui->listWidget_2->addItem("save at "+savedirectory);
 
         QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
-        QString dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+        QString dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
         QDir::setCurrent(savedirectory);
-        if(mode==ECT)datafile=new QFile("ECT"+dt+"_acquisition.bin");//准备文件
-        if(mode==TDlas)datafile=new QFile("TDlas"+dt+"_acquisition.bin");//准备文件
+        if(mode==ECT)datafile=new QFile("ECT_"+dt+"_acquisition.bin");//准备文件
+        if(mode==TDlas)datafile=new QFile("TDlas_"+dt+"_acquisition.bin");//准备文件
         //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
          datetime=QDateTime::currentDateTime();//准备文件txt
-         dt= datetime.toString("yyyy-MM-dd-HH.mm.ss");
+         dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
         QDir::setCurrent(savedirectory);
-        if(mode==ECT)txtfile=new QFile("ECT"+dt+"_acquisition.txt");
-        if(mode==TDlas)txtfile=new QFile("TDlas"+dt+"_acquisition.txt");
+        if(mode==ECT)txtfile=new QFile("ECT_"+dt+"_acquisition.txt");
+        if(mode==TDlas)txtfile=new QFile("TDlas_"+dt+"_acquisition.txt");
         txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);//准备文件
 
 
@@ -246,19 +235,30 @@ void MainWindow::startdataacquisition()//开始采集
         connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
         connect(this,&MainWindow::stopacquisition1,rwthread1,&RWThread::stoprun,Qt::DirectConnection);
         connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
+        connect(rwthread1, &RWThread::finished, this, &MainWindow::setrwthread1null);
+        connect(rwthread1, &RWThread::finished, this, &MainWindow::deletemylock);
         //Thread2
         rwthread2= new RWThread(&usb,datafile,4096,true,lockthread,m);
         connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
         connect(this,&MainWindow::stopacquisition2,rwthread2,&RWThread::stoprun,Qt::DirectConnection);
         connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
+        connect(rwthread2, &RWThread::finished, this, &MainWindow::setrwthread2null);
+        connect(rwthread2, &RWThread::finished, this, &MainWindow::deletemylock);
         //processThread
+        processthread=new processThread();
         processthreadobj=new processThreadobj(datafile,4096,true,txtfile,mm);
-        processthreadobj->moveToThread(&processthread);
+        processthreadobj->moveToThread(processthread);
         connect(rwthread1,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
         connect(rwthread1,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
+
         connect(rwthread2,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
         connect(rwthread2,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
-        connect(&processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
+        //connect(rwthread2, &RWThread::finished, processthread, &QThread::quit);
+
+        connect(processthreadobj,&processThreadobj::sigdrawECTusbdata,this,&MainWindow::drawECTusbdata);
+        connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
+        connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
+        connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater,Qt::DirectConnection);
 
 
 
@@ -290,7 +290,7 @@ void MainWindow::startdataacquisition()//开始采集
 
         rwthread1->start();//开始线程吧
         rwthread2->start();//开始线程吧
-        processthread.start();
+        processthread->start();//开始线程吧
 
         stopdataacquisition_action->setEnabled(true);
     }
@@ -299,12 +299,48 @@ void MainWindow::startdataacquisition()//开始采集
     ui->listWidget_2->scrollToBottom();
 }
 
-void MainWindow::threadstatus(quint16 st)//slot
+void MainWindow::reconstruct()
+{
+    statusdock->hide();
+}
+
+void MainWindow::drawECTusbdata(argfordraw *arg)
+{
+//    QString s;
+//    s.setNum(arg->tran.at(1000));
+//    ui->listWidget_2->addItem(s);
+//    ui->listWidget_2->scrollToBottom();
+    paintusb->update();
+
+}
+
+void MainWindow::drawTDlasusbdata(argfordraw *arg)
+{
+
+}
+
+void MainWindow::setrwthread1null()
+{
+    rwthread1=NULL;
+}
+
+void MainWindow::setrwthread2null()
+{
+    rwthread2=NULL;
+}
+
+void MainWindow::deletemylock()
+{
+    delete lockthread;
+}
+
+void MainWindow::threadstatus(double st)//slot
 {
     QString label;
-    label=QString::number(st);
+    label.setNum(st);
     ui->listWidget_2->addItem(label);
     ui->listWidget_2->scrollToBottom();
+
 }
 
 void MainWindow::childrenWidstatus(QString &str)//查看 子窗口 状态
@@ -332,6 +368,9 @@ void MainWindow::createToolBars()
     tooldataacquisition->addAction(dataacquisition_action);
     tooldataacquisition->addAction(startdataacquisition_action);
     tooldataacquisition->addAction(stopdataacquisition_action);
+
+    toolreconstruction=addToolBar("reconstruction");
+    toolreconstruction->addAction(reconstruct_action);
     //insert here
 
 }
@@ -360,6 +399,13 @@ void MainWindow::createaction()
 
     startdataacquisition_action= new QAction("start",this);
     connect(startdataacquisition_action,SIGNAL(triggered()),this,SLOT(startdataacquisition()));
+
+    reconstruct_action=new QAction("reconstruct",this);
+    connect(reconstruct_action,SIGNAL(triggered()),SLOT(reconstruct()));
+
+    LBP=new QAction("LBP",this);
+
+    caldelong=new QAction("caldelong",this);
 }
 
 void MainWindow::createmenus()//insert codes
@@ -367,6 +413,12 @@ void MainWindow::createmenus()//insert codes
     ui->menu->addAction(tdlas_action);
     ui->menu->addAction(ECT_action);
     ui->menu->addAction(openusb_action);
+
+    menualgorithm=new QMenu("algorithm");
+    ui->menureconstruct->addMenu(menualgorithm);
+    ui->menureconstruct->addAction(reconstruct_action);
+    menualgorithm->addAction(LBP);
+    menualgorithm->addAction(caldelong);
 }
 
 void MainWindow::createdockwidget()

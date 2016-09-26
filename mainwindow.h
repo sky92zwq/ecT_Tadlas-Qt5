@@ -14,6 +14,9 @@
 #include <qmutex.h>
 #include <qmath.h>
 #include "mythreads.h"
+#include <QPainter>
+#include "mypaintusb.h"
+#include <qlayout.h>
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +40,7 @@ private slots:
     void on_open_clicked();
 
     void on_close_clicked();
+
 protected slots:
     void openusb();
 
@@ -51,10 +55,22 @@ protected slots:
     void stopdataacquisition();
 
     void startdataacquisition();
+
+    void reconstruct();
+
+    void drawECTusbdata(argfordraw *arg);
+
+    void drawTDlasusbdata(argfordraw *arg);
+
+    void setrwthread1null();
+
+    void setrwthread2null();
+
+    void deletemylock();
 private slots:
     void acquisitioncount(){;}
 
-    void threadstatus(quint16 st);//看看子线程的状态
+    void threadstatus(double st);//看看子线程的状态
 
     void childrenWidstatus(QString &str);//看子窗口
 signals:
@@ -83,11 +99,14 @@ private:
     QDateTime datetime;
     QFile *datafile;
     QFile *txtfile;
-    QString savedirectory;
+    QString savedirectory,currentdirectory;
 private:
+    QMenu *menualgorithm;
+
     QToolBar *toolmode;
     QToolBar *toolusb;
     QToolBar *tooldataacquisition;
+    QToolBar *toolreconstruction;
 
     QAction *openusb_action;
     QAction *closeusb_action;
@@ -96,14 +115,21 @@ private:
     QAction *dataacquisition_action;
     QAction *stopdataacquisition_action;
     QAction *startdataacquisition_action;
+    //QAction *drawdata_action;
+    QAction *reconstruct_action;
+    QAction *LBP;
+    QAction *caldelong;
+
 private:
     QDockWidget *statusdock;
+
+    myPaintusb *paintusb;
 public:
     QMutex *lockthread;
     RWThread *rwthread1;
     RWThread *rwthread2;
     processThreadobj *processthreadobj;
-    QThread processthread;
+    processThread *processthread;
 
     QByteArray RWbyte;
 public:

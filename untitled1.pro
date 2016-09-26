@@ -16,13 +16,15 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     cs_ftfunction.cpp \
     tdlasdialog.cpp \
-    mythreads.cpp
+    mythreads.cpp \
+    mypaintusb.cpp
 
 HEADERS  += mainwindow.h \
     cs_ftfunction.h \
     ftd2xx.h \
     tdlasdialog.h \
-    mythreads.h
+    mythreads.h \
+    mypaintusb.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui
