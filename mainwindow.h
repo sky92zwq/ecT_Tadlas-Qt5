@@ -17,6 +17,10 @@
 #include <QPainter>
 #include "mypaintusb.h"
 #include <qlayout.h>
+#include <QFrame>
+#include <qopengl.h>
+#include <QOpenGLWidget>
+#include "ectclass.h"
 
 namespace Ui {
 class MainWindow;
@@ -32,8 +36,12 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    void resizeEvent(QResizeEvent *event);
 public:
     CS_ftfunction usb;
+
+    ECTClass *ect;
 
 private slots:
 
@@ -59,6 +67,8 @@ protected slots:
     void reconstruct();
 
     void drawECTusbdata(argfordraw *arg);
+
+    void drawECTonecircledata(argfordraw *arg);
 
     void drawTDlasusbdata(argfordraw *arg);
 
@@ -92,9 +102,14 @@ private:
 
     void createtdlasview();
 
+    void createtdlasWidget();
+
     void createectview();
+
+    void createectWidget();
 private:
     Ui::MainWindow *ui;
+    QVBoxLayout *mainlayout;
 
     QDateTime datetime;
     QFile *datafile;
@@ -120,10 +135,14 @@ private:
     QAction *LBP;
     QAction *caldelong;
 
+    QFrame *ECTpaintframe;
+
+
 private:
     QDockWidget *statusdock;
 
-    myPaintusb *paintusb;
+    myPaintusb *paintusbect;
+
 public:
     QMutex *lockthread;
     RWThread *rwthread1;
@@ -139,6 +158,8 @@ public:
     };
     ET mode;
     int RunSyn;
+private:
+    bool needstop;
 public:
     inline bool usbwrite();
 

@@ -11,6 +11,7 @@
 #include <qmutex.h>
 #include <qmath.h>
 #include <sys/time.h>
+#include "ectclass.h"
 
 
 /// \brief The RWThread class
@@ -28,8 +29,9 @@ public:
     //usb,二进制文件，buffer长度，标志，锁
     explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk,ET m)
         :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),mode(m),QThread(){
-        //ZeroMemory(RxBuffer,bufferlong);
-        RxBuffer=(char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
+        RxBuffer=(unsigned char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
+        RxBuffer[10]=0x00;RxBuffer[11]=0x00;
+        //ZeroMemory(RxBuffer,bufferlong-10);
         datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         infile= new QDataStream(datafile);
         count=0;
@@ -37,8 +39,8 @@ public:
     }
     void run(); /* ... here is the expensive or blocking operation ... */
 signals:
-    void sigECTtransfer(char*,int);
-    void sigTDlastransfer(char*,int );
+    void sigECTtransfer(unsigned char*,int);
+    void sigTDlastransfer(unsigned char*,int );
 signals:
     void rwcount();
     void readbuffer(double st);
@@ -53,7 +55,7 @@ private:
     uint count;//infinite how?
     const int bufferlong;
     quint8 shangweijibuffer[100];
-    char * RxBuffer;
+    unsigned char * RxBuffer;
     QDataStream *infile;
     DWORD BytesReceived;
     LARGE_INTEGER litmp;
@@ -72,11 +74,11 @@ public:
 };
 
 ///
-/// \brief The processThread class............................
+/// \brief The processThreadobj class............................
 ///
 struct argfordraw{
-QVector<qint16> tran;
-qint16  maxtransfer,mintransfer;
+QVector<float> tran;
+float  maxtransfer,mintransfer;
 };
 class processThreadobj : public QObject
 {
@@ -87,16 +89,19 @@ public:
         TDlas
     };
     ET mode;
+    ECTClass *ect;
 public:
     //二进制文件，buffer长度，标志，txt文件，mode
     explicit processThreadobj( QFile *df,const int bl,bool rf,QFile *tf,ET m)
         :datafile(df),bufferlong(bl),runflag(rf),txtfile(tf),mode(m),QObject(){
 
         //ZeroMemory(RxBuffer,bufferlong);
-        count=0;
+        count=0;times=5;
 
         txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         trantextfile.setDevice(txtfile);
+
+        ect=ECTClass::getInstance();
     }
 
 
@@ -105,6 +110,8 @@ signals:
     void readbuffer(quint16);
 
     void sigdrawECTusbdata(argfordraw *);
+
+    void sigdrawECTonecircledata(argfordraw *);
 
     void sigdrawTDlasusbdata(argfordraw *);
 
@@ -118,14 +125,14 @@ private:
     DWORD BytesReceived;
     QFile *txtfile;
     QTextStream trantextfile;
-    qint16 transfer;
+    float transfer;
 
-    int count;
-    argfordraw tranarg;
+    int count,times;
+    argfordraw tranarg,onecirclearg;
 
 public slots:
-    void transferforECTdrawing(char*buffer, int bufferlong);
-    void transferforTDlasdrawing(char*buffer, int bufferlong);
+    void transferforECTdrawing(unsigned char *buffer, int bufferlong);
+    void transferforTDlasdrawing(unsigned char*buffer, int bufferlong);
 
 };
 #endif // MYTHREADS_H

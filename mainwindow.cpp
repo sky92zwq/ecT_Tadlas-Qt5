@@ -5,35 +5,69 @@
 
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+    QMainWindow(parent),needstop(true),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    mainlayout=new QVBoxLayout(ui->centralWidget);
+    mainlayout->addWidget(ui->horizontalScrollBar);
+
 
     createaction();
     createmenus();  //菜单栏
     createToolBars();//工具栏
     createdockwidget();//停靠部件
+    createectWidget();
+
 
     datafile=NULL;
     rwthread1=NULL;
     rwthread2=NULL;
     savedirectory="./";
 
-    mode=ECT;
+    Ect();
     ECT_action->setCheckable(true);
-    ECT_action->setChecked(true);
-    tdlas_action->setChecked(false);
+
     stopdataacquisition_action->setEnabled(false);
 
-    QHBoxLayout *mainlayout=new QHBoxLayout(this);
-    paintusb=new myPaintusb(ui->frame);
-    mainlayout->addWidget(paintusb);
+    ect=ECTClass::getInstance();ect->setelectrode_number(12);
+
+    //mainlayout->addWidget(paintusb);
 }
 
 MainWindow::~MainWindow()
 {
+    if(needstop)stopdataacquisition();
     delete ui;
+    delete mainlayout;
+    delete paintusbect;
+
+//    delete menualgorithm;
+
+//    delete toolmode;
+//    delete toolusb;
+//    delete tooldataacquisition;
+//    delete toolreconstruction;
+
+//    delete openusb_action;
+//    delete closeusb_action;
+//    delete tdlas_action;
+//    delete ECT_action;
+//    delete dataacquisition_action;
+//    delete stopdataacquisition_action;
+//    delete startdataacquisition_action;
+
+//    delete reconstruct_action;
+//    delete LBP;
+//    delete caldelong;
+
+
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+
+    QApplication::postEvent(paintusbect, new QEvent(QEvent::Resize));
 }
 
 
@@ -134,8 +168,8 @@ void MainWindow::dataacquisition()//数据采集 action
 {
     statusdock->setVisible(true);//使停靠栏可见
 
-    if(1){//usb.getnumDEv()
-        if(1){//usb.isopened()
+    //usb.getnumDEv()
+        //usb.isopened()
             QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
             //options |= QFileDialog::DontUseNativeDialog;
             currentdirectory = QFileDialog::getExistingDirectory(this,
@@ -155,16 +189,6 @@ void MainWindow::dataacquisition()//数据采集 action
                     return;
                 }
             }
-        }
-        else{
-            ui->listWidget_2->addItem("err: ft_device's found, open it first");
-        }
-
-    }
-    else{
-        ui->listWidget_2->addItem("err: find a ft_device first");
-    }
-
     ui->listWidget_2->scrollToBottom();
 
 }
@@ -203,6 +227,7 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
     }
 
     startdataacquisition_action->setEnabled(true);
+    needstop=false;
 }
 
 void MainWindow::startdataacquisition()//开始采集
@@ -213,13 +238,13 @@ void MainWindow::startdataacquisition()//开始采集
         ui->listWidget_2->addItem("save at "+savedirectory);
 
         QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
-        QString dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
+        QString dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
         QDir::setCurrent(savedirectory);
         if(mode==ECT)datafile=new QFile("ECT_"+dt+"_acquisition.bin");//准备文件
         if(mode==TDlas)datafile=new QFile("TDlas_"+dt+"_acquisition.bin");//准备文件
         //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
          datetime=QDateTime::currentDateTime();//准备文件txt
-         dt= datetime.toString("yyyy-MM-dd_HH.mm.ss");
+         dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
         QDir::setCurrent(savedirectory);
         if(mode==ECT)txtfile=new QFile("ECT_"+dt+"_acquisition.txt");
         if(mode==TDlas)txtfile=new QFile("TDlas_"+dt+"_acquisition.txt");
@@ -256,6 +281,7 @@ void MainWindow::startdataacquisition()//开始采集
         //connect(rwthread2, &RWThread::finished, processthread, &QThread::quit);
 
         connect(processthreadobj,&processThreadobj::sigdrawECTusbdata,this,&MainWindow::drawECTusbdata);
+        connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,this,&MainWindow::drawECTonecircledata);
         connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
         connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
         connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater,Qt::DirectConnection);
@@ -293,6 +319,7 @@ void MainWindow::startdataacquisition()//开始采集
         processthread->start();//开始线程吧
 
         stopdataacquisition_action->setEnabled(true);
+        needstop=true;
     }
     else
         ui->listWidget_2->addItem("open usb first");
@@ -302,15 +329,23 @@ void MainWindow::startdataacquisition()//开始采集
 void MainWindow::reconstruct()
 {
     statusdock->hide();
+    QApplication::postEvent(paintusbect, new QEvent(QEvent::Resize));
+
 }
 
 void MainWindow::drawECTusbdata(argfordraw *arg)
 {
-//    QString s;
-//    s.setNum(arg->tran.at(1000));
-//    ui->listWidget_2->addItem(s);
-//    ui->listWidget_2->scrollToBottom();
-    paintusb->update();
+
+
+    paintusbect->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
+    paintusbect->update();
+    //arg->tran.clear();
+
+}
+
+void MainWindow::drawECTonecircledata(argfordraw *arg)
+{
+    qDebug()<<ect->measurenumber();
 
 }
 
@@ -430,11 +465,29 @@ void MainWindow::createdockwidget()
 
 void MainWindow::createtdlasview()
 {
+    mainlayout->removeWidget(ECTpaintframe);
+    paintusbect->setVisible(false);
+
+    mainlayout->update();
+}
+
+void MainWindow::createtdlasWidget()
+{
 
 }
 
 void MainWindow::createectview()
 {
+    paintusbect->setVisible(true);
+    mainlayout->insertWidget(0,ECTpaintframe);
+
+}
+
+void MainWindow::createectWidget()
+{
+    ECTpaintframe=new QFrame();
+    paintusbect=new myPaintusb(ECTpaintframe);
+
 
 }
 

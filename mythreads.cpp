@@ -14,11 +14,11 @@ void RWThread::run(){
             //加锁
             lock->lock();
             usb->Read(RxBuffer,bufferlong,&BytesReceived);
-            msleep(100);
+            msleep(30);
             lock->unlock();
             //锁
             //lock2.lock();
-            infile->writeRawData(RxBuffer,bufferlong);
+            infile->writeRawData((char*)RxBuffer,bufferlong);
             //lock2.unlock();
             //runnum++;
             emit sigECTtransfer(RxBuffer,bufferlong);
@@ -30,7 +30,7 @@ void RWThread::run(){
             lock->unlock();
             //锁
             //lock2.lock();
-            infile->writeRawData(RxBuffer,bufferlong);
+            infile->writeRawData((char*)RxBuffer,bufferlong);
             //lock2.unlock();
             emit sigTDlastransfer(RxBuffer,bufferlong);
             break;
@@ -50,25 +50,49 @@ void RWThread::stoprun(bool flag)
 
 /// \brief processThread::............................
 ///
-void processThreadobj::transferforECTdrawing(char *buffer, int bufferlong)
+void processThreadobj::transferforECTdrawing(unsigned char *buffer, int bufferlong)
 {
     //0.002s满足ECT
     tranarg.maxtransfer=buffer[0]*256+buffer[1];
     tranarg.mintransfer=tranarg.maxtransfer;
 
-    for(int i=0;i<bufferlong;){
-        transfer=buffer[i]*256+buffer[i+1];
-        tranarg.tran<<transfer;
+    int i=0;
+    for(;i<bufferlong;){
+        transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+        trantextfile<<transfer<<' ';
+        i+=2;
+        if(transfer==ect->indicator())break;
+    }
+
+    count=i;
+    tranarg.tran.clear();
+    for(;i<bufferlong;){
+        transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+        if(transfer!=ect->indicator())tranarg.tran<<transfer;
         if(transfer>tranarg.maxtransfer)tranarg.maxtransfer=transfer;
         if(transfer<tranarg.mintransfer)tranarg.mintransfer=transfer;
         trantextfile<<transfer<<' ';
+
+/*        if(count==4*(66+1)){//&&(buffer[i-2]*256+buffer[i-1])==ect->indicator()一次有效数据循环发送
+//            onecirclearg.maxtransfer=transfer;
+//            onecirclearg.mintransfer=transfer;
+//            for(int j=i;j<2*66;){
+//                transfer=buffer[j]*256+buffer[j+1];
+//                if(transfer!=ect->indicator())onecirclearg.tran<<transfer;
+//                if(transfer>onecirclearg.maxtransfer)onecirclearg.maxtransfer=transfer;
+//                if(transfer<onecirclearg.mintransfer)onecirclearg.mintransfer=transfer;
+//                j+=2;
+//            }
+//            emit sigdrawECTonecircledata(&onecirclearg);
+//        }*/
+
         i+=2;
     }
 
     emit sigdrawECTusbdata(&tranarg);
 
 }
-void processThreadobj::transferforTDlasdrawing(char *buffer, int bufferlong)
+void processThreadobj::transferforTDlasdrawing(unsigned char *buffer, int bufferlong)
 {
     //30us noway,挑拣,发送
 ;

@@ -9,6 +9,7 @@ tdlasDialog::tdlasDialog(QWidget *parent) :
     ui->setupUi(this);
 
     ui->verticalLayout->setSizeConstraint(QLayout::SetFixedSize);
+    ui->verticalLayout->setMargin(7);
 
     ui->das_basefr_lab->setVisible(false);ui->das_basefr->setVisible(false);
     ui->das_duty_lab->setVisible(false);ui->das_duty->setVisible(false);
