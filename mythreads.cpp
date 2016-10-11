@@ -5,33 +5,24 @@
 
 /// \brief RWThread::.........................
 ///
-void RWThread::run(){
-
+void RWThread::run(){ 
     while(runflag==true){
+        //加锁
+        lock->lock();
+        usb->Read(RxBuffer,bufferlong,&BytesReceived);
+        //msleep(190);
+        lock->unlock();
+        //锁
+        //lock2.lock();
+        infile->writeRawData((char*)RxBuffer,bufferlong);
+        //lock2.unlock();
+        //runnum++;
         switch(mode){
         case ECT:
             //0.0001~0.0002s
-            //加锁
-            lock->lock();
-            usb->Read(RxBuffer,bufferlong,&BytesReceived);
-            msleep(30);
-            lock->unlock();
-            //锁
-            //lock2.lock();
-            infile->writeRawData((char*)RxBuffer,bufferlong);
-            //lock2.unlock();
-            //runnum++;
             emit sigECTtransfer(RxBuffer,bufferlong);
             break;
         case TDlas:
-            lock->lock();
-            usb->Read(RxBuffer,bufferlong,&BytesReceived);
-            //msleep(100);
-            lock->unlock();
-            //锁
-            //lock2.lock();
-            infile->writeRawData((char*)RxBuffer,bufferlong);
-            //lock2.unlock();
             emit sigTDlastransfer(RxBuffer,bufferlong);
             break;
         }
@@ -53,38 +44,50 @@ void RWThread::stoprun(bool flag)
 void processThreadobj::transferforECTdrawing(unsigned char *buffer, int bufferlong)
 {
     //0.002s满足ECT
-    tranarg.maxtransfer=buffer[0]*256+buffer[1];
-    tranarg.mintransfer=tranarg.maxtransfer;
-
     int i=0;
+    tranarg.maxtransfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+    tranarg.mintransfer=tranarg.maxtransfer;
+    tranarg.tran.clear();
     for(;i<bufferlong;){
         transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
-        trantextfile<<transfer<<' ';
+        /*if(transfer!=ect->indicator())*/tranarg.tran<<transfer;
+        if(transfer>tranarg.maxtransfer)tranarg.maxtransfer=transfer;
+        if(transfer<tranarg.mintransfer)tranarg.mintransfer=transfer;
+        trantextfile<<transfer<<endl;
+
         i+=2;
         if(transfer==ect->indicator())break;
     }
 
-    count=i;
-    tranarg.tran.clear();
+    int nextgo=1;
+    int onecirclecount=0;
     for(;i<bufferlong;){
         transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
-        if(transfer!=ect->indicator())tranarg.tran<<transfer;
+        if(onecirclecount==10){
+            emit sigdrawECTonecircledata(&onecirclearg);
+            onecirclecount=0;
+        }
+        if(transfer==ect->indicator())
+        {
+            onecirclecount++;
+            onecirclearg.maxtransfer=(buffer[i+2]*256+buffer[i+3])*256/8*3.14/2/400*2/8192*1000;
+            onecirclearg.mintransfer=onecirclearg.maxtransfer;
+            onecirclearg.tran.clear();
+            nextgo=0;
+        }
+        if(nextgo<=ect->measurenumber()&&nextgo!=0){
+
+            onecirclearg.tran<<transfer;
+            if(transfer>onecirclearg.maxtransfer)onecirclearg.maxtransfer=transfer;
+            if(transfer<onecirclearg.mintransfer)onecirclearg.mintransfer=transfer;
+        }
+
+        nextgo++;
+
+        /*if(transfer!=ect->indicator())*/tranarg.tran<<transfer;
         if(transfer>tranarg.maxtransfer)tranarg.maxtransfer=transfer;
         if(transfer<tranarg.mintransfer)tranarg.mintransfer=transfer;
-        trantextfile<<transfer<<' ';
-
-/*        if(count==4*(66+1)){//&&(buffer[i-2]*256+buffer[i-1])==ect->indicator()一次有效数据循环发送
-//            onecirclearg.maxtransfer=transfer;
-//            onecirclearg.mintransfer=transfer;
-//            for(int j=i;j<2*66;){
-//                transfer=buffer[j]*256+buffer[j+1];
-//                if(transfer!=ect->indicator())onecirclearg.tran<<transfer;
-//                if(transfer>onecirclearg.maxtransfer)onecirclearg.maxtransfer=transfer;
-//                if(transfer<onecirclearg.mintransfer)onecirclearg.mintransfer=transfer;
-//                j+=2;
-//            }
-//            emit sigdrawECTonecircledata(&onecirclearg);
-//        }*/
+        trantextfile<<transfer<<endl;
 
         i+=2;
     }

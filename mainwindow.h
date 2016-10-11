@@ -10,17 +10,21 @@
 #include <qfiledialog.h>
 #include <qdatetime.h>
 #include <qthread.h>
-#include <qreadwritelock.h>
 #include <qmutex.h>
 #include <qmath.h>
 #include "mythreads.h"
 #include <QPainter>
 #include "mypaintusb.h"
 #include <qlayout.h>
+#include <QVBoxLayout>
 #include <QFrame>
 #include <qopengl.h>
 #include <QOpenGLWidget>
 #include "ectclass.h"
+#include <qcombobox.h>
+#include <qlabel.h>
+#include <showwidget.h>
+
 
 namespace Ui {
 class MainWindow;
@@ -43,11 +47,7 @@ public:
 
     ECTClass *ect;
 
-private slots:
 
-    void on_open_clicked();
-
-    void on_close_clicked();
 
 protected slots:
     void openusb();
@@ -83,6 +83,8 @@ private slots:
     void threadstatus(double st);//看看子线程的状态
 
     void childrenWidstatus(QString &str);//看子窗口
+
+    void setelectrodenum(const QString &text);
 signals:
 
     void startacquisition(CS_ftfunction &usb,QString savedirectory);
@@ -109,7 +111,6 @@ private:
     void createectWidget();
 private:
     Ui::MainWindow *ui;
-    QVBoxLayout *mainlayout;
 
     QDateTime datetime;
     QFile *datafile;
@@ -135,13 +136,16 @@ private:
     QAction *LBP;
     QAction *caldelong;
 
-    QFrame *ECTpaintframe;
-
+    showwidget *showwid;
 
 private:
     QDockWidget *statusdock;
+    QWidget *ectdockcontent;
+    QDockWidget *ectdock;
+    QGridLayout *ectdocklayout;
+    QComboBox *electrode_numberbox;
+    QLabel *electrode_numberlabel;
 
-    myPaintusb *paintusbect;
 
 public:
     QMutex *lockthread;
@@ -157,14 +161,10 @@ public:
         TDlas
     };
     ET mode;
-    int RunSyn;
 private:
     bool needstop;
-public:
-    inline bool usbwrite();
 
 };
-
 
 
 

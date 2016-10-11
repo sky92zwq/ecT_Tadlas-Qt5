@@ -4,14 +4,16 @@
 #include "tdlasdialog.h"
 
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),needstop(true),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    mainlayout=new QVBoxLayout(ui->centralWidget);
-    mainlayout->addWidget(ui->horizontalScrollBar);
 
+
+    ect=ECTClass::getInstance();
+    ect->setelectrode_number(16);
 
     createaction();
     createmenus();  //菜单栏
@@ -20,46 +22,55 @@ MainWindow::MainWindow(QWidget *parent) :
     createectWidget();
 
 
+
     datafile=NULL;
     rwthread1=NULL;
     rwthread2=NULL;
     savedirectory="./";
 
+    showwid=new showwidget;
+    setCentralWidget(showwid);
+
     Ect();
-    ECT_action->setCheckable(true);
+//    stopdataacquisition_action->setEnabled(false);
 
-    stopdataacquisition_action->setEnabled(false);
-
-    ect=ECTClass::getInstance();ect->setelectrode_number(12);
-
-    //mainlayout->addWidget(paintusb);
 }
 
 MainWindow::~MainWindow()
 {
     if(needstop)stopdataacquisition();
     delete ui;
-    delete mainlayout;
-    delete paintusbect;
+//    delete rwthread1;
+//    delete rwthread2;
+//    delete processthreadobj;
+//    delete processthread;
+    delete showwid;
+    delete ect;
 
-//    delete menualgorithm;
+    delete statusdock;
+    delete electrode_numberbox;
+    delete electrode_numberlabel;
+    delete ectdocklayout;
+    delete ectdockcontent;
+    delete ectdock;
 
-//    delete toolmode;
-//    delete toolusb;
-//    delete tooldataacquisition;
-//    delete toolreconstruction;
+    delete LBP;
+    delete caldelong;
+    delete reconstruct_action;
+    delete menualgorithm;
 
-//    delete openusb_action;
-//    delete closeusb_action;
-//    delete tdlas_action;
-//    delete ECT_action;
-//    delete dataacquisition_action;
-//    delete stopdataacquisition_action;
-//    delete startdataacquisition_action;
+    delete openusb_action;
+    delete closeusb_action;
+    delete tdlas_action;
+    delete ECT_action;
+    delete dataacquisition_action;
+    delete stopdataacquisition_action;
+    delete startdataacquisition_action;
 
-//    delete reconstruct_action;
-//    delete LBP;
-//    delete caldelong;
+    delete toolmode;
+    delete toolusb;
+    delete tooldataacquisition;
+    delete toolreconstruction;
 
 
 }
@@ -67,36 +78,11 @@ MainWindow::~MainWindow()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
 
-    QApplication::postEvent(paintusbect, new QEvent(QEvent::Resize));
+    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
+    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
 }
 
 
-void MainWindow::on_open_clicked()
-{
-    QString num;
-    num=QString::number( usb.getnumDEv());
-    ui->listWidget_2->addItem(num);
-
-    QString label;
-    if(!usb.isopened()){
-        label+=usb.status.at(usb.Open(0));
-        ui->listWidget_2->addItem(label);
-    }
-    else
-        ui->listWidget_2->addItem("device 0 is allrdeay opened");
-}
-
-void MainWindow::on_close_clicked()
-{
-    QString label;
-    if(usb.isopened()){
-
-        label+=usb.status.at(usb.Close());
-        ui->listWidget_2->addItem(label);
-    }
-    else
-        ui->listWidget_2->addItem("device 0 is allrdeay closed");
-}
 
 void MainWindow::openusb()//closeusb action
 {
@@ -137,6 +123,7 @@ void MainWindow::closeusb()//closeusb action
 void MainWindow::tdlas()
 {
     mode=TDlas;
+    ectdock->setVisible(false);
 
     tdlas_action->setChecked(true);
     ECT_action->setChecked(false);
@@ -153,6 +140,7 @@ void MainWindow::tdlas()
 void MainWindow::Ect()
 {
     mode=ECT;
+    if(!ectdock->isVisible())ectdock->setVisible(true);
 
     ECT_action->setChecked(true);
 
@@ -167,28 +155,27 @@ void MainWindow::Ect()
 void MainWindow::dataacquisition()//数据采集 action
 {
     statusdock->setVisible(true);//使停靠栏可见
-
     //usb.getnumDEv()
-        //usb.isopened()
-            QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
-            //options |= QFileDialog::DontUseNativeDialog;
-            currentdirectory = QFileDialog::getExistingDirectory(this,
-                                                                      tr("Save Directory"),
-                                                                      "",
-                                                                      options);
-            if (currentdirectory.isEmpty()){
-                qDebug()<<"err";
-                return;
-            }
-            else{
-                savedirectory=currentdirectory;
+    //usb.isopened()
+    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
+    //options |= QFileDialog::DontUseNativeDialog;
+    currentdirectory = QFileDialog::getExistingDirectory(this,
+                                                              tr("Save Directory"),
+                                                              "",
+                                                              options);
+    if (currentdirectory.isEmpty()){
+        qDebug()<<"err";
+        return;
+    }
+    else{
+        savedirectory=currentdirectory;
 
-                if(savedirectory=="C:/"){
-                    ui->listWidget_2->addItem("do not use C:/ as a saving position");
-                    ui->listWidget_2->addItem("change dir and try again");
-                    return;
-                }
-            }
+        if(savedirectory=="C:/"){
+            ui->listWidget_2->addItem("do not use C:/ as a saving position");
+            ui->listWidget_2->addItem("change dir and try again");
+            return;
+        }
+    }
     ui->listWidget_2->scrollToBottom();
 
 }
@@ -232,7 +219,7 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
 
 void MainWindow::startdataacquisition()//开始采集
 {
-    if(1){//usb.isopened()
+    if(usb.isopened()){//usb.isopened()
 
         startdataacquisition_action->setEnabled(false);
         ui->listWidget_2->addItem("save at "+savedirectory);
@@ -248,7 +235,7 @@ void MainWindow::startdataacquisition()//开始采集
         QDir::setCurrent(savedirectory);
         if(mode==ECT)txtfile=new QFile("ECT_"+dt+"_acquisition.txt");
         if(mode==TDlas)txtfile=new QFile("TDlas_"+dt+"_acquisition.txt");
-        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);//准备文件
+        txtfile->open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);//准备文件
 
 
         lockthread=new QMutex;
@@ -284,7 +271,7 @@ void MainWindow::startdataacquisition()//开始采集
         connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,this,&MainWindow::drawECTonecircledata);
         connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
         connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
-        connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater,Qt::DirectConnection);
+        connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
 
 
 
@@ -296,7 +283,7 @@ void MainWindow::startdataacquisition()//开始采集
         if(mode==TDlas){
             in<<(quint16)0x8800<<(quint16)4096;
             if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
-                ui->listWidget_2->addItem("发送命令写入成功");
+                ui->listWidget_2->addItem("发送命令写入成功TDLAS");
             qDebug()<<BytesReceived;
             UCHAR MASK = 0xff;
             UCHAR MODE = 0x40;
@@ -308,7 +295,7 @@ void MainWindow::startdataacquisition()//开始采集
             in<<(quint8)0x88;
             qDebug()<<TxBuffer.data();
             if(usb.Write(TxBuffer.data(),1,&BytesReceived)==FT_OK&&BytesReceived==1)
-                ui->listWidget_2->addItem("发送命令写入成功");
+                ui->listWidget_2->addItem("发送命令写入成功ECT");
             qDebug()<<BytesReceived;
             usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
         }
@@ -329,7 +316,9 @@ void MainWindow::startdataacquisition()//开始采集
 void MainWindow::reconstruct()
 {
     statusdock->hide();
-    QApplication::postEvent(paintusbect, new QEvent(QEvent::Resize));
+    ectdock->hide();
+    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
+    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
 
 }
 
@@ -337,15 +326,16 @@ void MainWindow::drawECTusbdata(argfordraw *arg)
 {
 
 
-    paintusbect->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
-    paintusbect->update();
+    (showwid->paintusbect)->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
+    (showwid->paintusbect)->update();
     //arg->tran.clear();
 
 }
 
 void MainWindow::drawECTonecircledata(argfordraw *arg)
 {
-    qDebug()<<ect->measurenumber();
+    (showwid->paintusbect_2)->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
+    (showwid->paintusbect_2)->update();
 
 }
 
@@ -367,6 +357,7 @@ void MainWindow::setrwthread2null()
 void MainWindow::deletemylock()
 {
     delete lockthread;
+    lockthread=NULL;
 }
 
 void MainWindow::threadstatus(double st)//slot
@@ -382,6 +373,12 @@ void MainWindow::childrenWidstatus(QString &str)//查看 子窗口 状态
 {
     ui->listWidget_2->addItem(str);
     ui->listWidget_2->scrollToBottom();
+}
+
+void MainWindow::setelectrodenum(const QString &text)
+{
+    ect->setelectrode_number((quint8)text.toInt());
+    qDebug()<<ect->measurenumber();
 }
 
 
@@ -458,6 +455,23 @@ void MainWindow::createmenus()//insert codes
 
 void MainWindow::createdockwidget()
 {
+    ectdock=new QDockWidget(tr("ECT"),this);
+    ectdockcontent=new QWidget;
+    ectdockcontent->setPalette(QPalette(Qt::white));
+    ectdockcontent->setAutoFillBackground(true);
+    ectdocklayout=new QGridLayout(ectdockcontent);
+    ectdocklayout->setContentsMargins(0,0,0,0);
+    electrode_numberbox=new QComboBox;
+    QStringList list;
+    list<<"16"<<"12"<<"8";
+    electrode_numberbox->addItems(list);
+    connect(electrode_numberbox,SIGNAL(activated(QString)),this,SLOT(setelectrodenum(QString)));
+    electrode_numberlabel=new QLabel("electrode_number");
+    ectdocklayout->addWidget(electrode_numberlabel,0,0);
+    ectdocklayout->addWidget(electrode_numberbox,0,1);
+    ectdock->setWidget(ectdockcontent);
+    addDockWidget(Qt::RightDockWidgetArea,ectdock);
+
     statusdock=new QDockWidget(tr("status"),this);
     statusdock->setWidget(ui->listWidget_2);
     addDockWidget(Qt::RightDockWidgetArea,statusdock);
@@ -465,10 +479,7 @@ void MainWindow::createdockwidget()
 
 void MainWindow::createtdlasview()
 {
-    mainlayout->removeWidget(ECTpaintframe);
-    paintusbect->setVisible(false);
 
-    mainlayout->update();
 }
 
 void MainWindow::createtdlasWidget()
@@ -478,16 +489,17 @@ void MainWindow::createtdlasWidget()
 
 void MainWindow::createectview()
 {
-    paintusbect->setVisible(true);
-    mainlayout->insertWidget(0,ECTpaintframe);
+    if(!showwid->paintusbect->isVisible()){
+        showwid->paintusbect->setVisible(true);
+     }
+
+
+
 
 }
 
 void MainWindow::createectWidget()
 {
-    ECTpaintframe=new QFrame();
-    paintusbect=new myPaintusb(ECTpaintframe);
-
 
 }
 

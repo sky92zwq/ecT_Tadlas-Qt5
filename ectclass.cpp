@@ -12,7 +12,7 @@ quint8 ECTClass::iselectrode_number()
     return electrode_number;
 }
 
-quint16 ECTClass::indicator()
+float ECTClass::indicator()
 {
     return 0;
 }

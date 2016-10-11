@@ -30,7 +30,6 @@ public:
     explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk,ET m)
         :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),mode(m),QThread(){
         RxBuffer=(unsigned char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
-        RxBuffer[10]=0x00;RxBuffer[11]=0x00;
         //ZeroMemory(RxBuffer,bufferlong-10);
         datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
         infile= new QDataStream(datafile);
@@ -72,14 +71,16 @@ public:
     void run();
 
 };
-
 ///
-/// \brief The processThreadobj class............................
+/// \brief The argfordraw struct............................
 ///
 struct argfordraw{
 QVector<float> tran;
 float  maxtransfer,mintransfer;
 };
+///
+/// \brief The processThreadobj class............................
+///
 class processThreadobj : public QObject
 {
     Q_OBJECT
@@ -98,7 +99,7 @@ public:
         //ZeroMemory(RxBuffer,bufferlong);
         count=0;times=5;
 
-        txtfile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
+        txtfile->open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);
         trantextfile.setDevice(txtfile);
 
         ect=ECTClass::getInstance();

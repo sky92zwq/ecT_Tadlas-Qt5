@@ -13,12 +13,14 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     cs_ftfunction.cpp \
-    tdlasdialog.cpp \
-    mythreads.cpp \
+    ectclass.cpp \
     mypaintusb.cpp \
-    ectclass.cpp
+    showwidget.cpp \
+    mainwindow.cpp \
+    mythreads.cpp \
+    tdlasdialog.cpp
+
 
 HEADERS  += mainwindow.h \
     cs_ftfunction.h \
@@ -26,7 +28,8 @@ HEADERS  += mainwindow.h \
     tdlasdialog.h \
     mythreads.h \
     mypaintusb.h \
-    ectclass.h
+    ectclass.h \
+    showwidget.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui
