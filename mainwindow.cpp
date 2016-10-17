@@ -88,18 +88,29 @@ void MainWindow::openusb()//closeusb action
 {
     statusdock->setVisible(true);//使停靠栏可见
 
+    DWORD numdev;
     QString num;
-    num=QString::number( usb.getnumDEv());
+    usb.GetDeviceInfoList(&numdev);
+    num=QString::number((quint16)numdev);
     num+=" devices";
     ui->listWidget_2->addItem(num);
 
-    QString label;
+    QString label("dev");
+    int i=0;
     if(!usb.isopened()){
-        label+=usb.status.at(usb.Open(0));
-        ui->listWidget_2->addItem(label);
+        for(;i<numdev;i++){
+            if(QString(usb.devInfo[i].SerialNumber)==QString("FTPPCZOA")){
+                label+=QString::number(i);
+                label+=": ";
+                label+=usb.status.at(usb.Open(i));
+                ui->listWidget_2->addItem(label);
+                break;
+            }
+        }
     }
-    else
-        ui->listWidget_2->addItem("device 0 is allrdeay opened");
+    else{
+        ui->listWidget_2->addItem("device is allrdeay open");
+    }
 
     ui->listWidget_2->scrollToBottom();
 }
@@ -115,7 +126,7 @@ void MainWindow::closeusb()//closeusb action
         ui->listWidget_2->addItem(label);
     }
     else
-        ui->listWidget_2->addItem("device 0 is allrdeay closed");
+        ui->listWidget_2->addItem("device  is allrdeay closed");
 
     ui->listWidget_2->scrollToBottom();
 }
@@ -215,6 +226,7 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
 
     startdataacquisition_action->setEnabled(true);
     needstop=false;
+    ui->listWidget_2->scrollToBottom();
 }
 
 void MainWindow::startdataacquisition()//开始采集
@@ -409,10 +421,10 @@ void MainWindow::createToolBars()
 
 void MainWindow::createaction()
 {
-    openusb_action= new QAction("openusb",this);
+    openusb_action= new QAction(QIcon(":/new/prefix1/images/usb1.png"),"openusb",this);
     connect(openusb_action,SIGNAL(triggered()),this,SLOT(openusb()));
 
-    closeusb_action=new QAction("closeusb",this);
+    closeusb_action=new QAction(QIcon(":/new/prefix1/images/lan-break.png"),"closeusb",this);
     connect(closeusb_action,SIGNAL(triggered()),this,SLOT(closeusb()));
 
     tdlas_action=new QAction("tdlas",this);
@@ -423,13 +435,13 @@ void MainWindow::createaction()
     connect(ECT_action,SIGNAL(triggered()),this,SLOT(Ect()));
     ECT_action->setCheckable(true);
 
-    dataacquisition_action=new QAction("Dir of data acquisition",this);
+    dataacquisition_action=new QAction(QIcon(":/new/prefix1/images/directory.png"),"Dir of data acquisition",this);
     connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
 
-    stopdataacquisition_action= new QAction("stop",this);
+    stopdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/stop.png"),"stop",this);
     connect(stopdataacquisition_action,SIGNAL(triggered()),this,SLOT(stopdataacquisition()));
 
-    startdataacquisition_action= new QAction("start",this);
+    startdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/start.png"),"start",this);
     connect(startdataacquisition_action,SIGNAL(triggered()),this,SLOT(startdataacquisition()));
 
     reconstruct_action=new QAction("reconstruct",this);

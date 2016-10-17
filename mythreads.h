@@ -10,7 +10,6 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qmath.h>
-#include <sys/time.h>
 #include "ectclass.h"
 
 

@@ -55,6 +55,10 @@ public:
 
     typedef FT_STATUS(WINAPI *PtrToCreateDeviceInfoList)(LPDWORD lpdwNumDevs);
     PtrToCreateDeviceInfoList m_pCreateDeviceInfoList;
+    
+    typedef FT_STATUS(WINAPI *PtrToGetDeviceInfoList)(FT_DEVICE_LIST_INFO_NODE *pDest, 
+                                                      LPDWORD lpdwNumDevs );
+    PtrToGetDeviceInfoList m_pGetDeviceInfoList;
 
     typedef FT_STATUS(WINAPI *PtrToGetDeviceInfoDetail)(DWORD dwIndex, LPDWORD lpdwFlags, LPDWORD lpdwType, LPDWORD lpdwID, LPDWORD lpdwLocId,
         PCHAR pcSerialNumber, PCHAR pcDescription, FT_HANDLE *ftHandle);
@@ -71,6 +75,7 @@ public:
        FT_HANDLE m_ftHandle;
        FT_STATUS m_ftStatus;
        HMODULE m_hmodule;
+       FT_DEVICE_LIST_INFO_NODE *devInfo;
 private:
        bool isopen;
 public:
@@ -110,7 +115,7 @@ public:
        FT_STATUS  GetDeviceInfoDetail(DWORD dwIndex, LPDWORD lpdwFlags, LPDWORD lpdwType, LPDWORD lpdwID, LPDWORD lpdwLocId,
         PCHAR pcSerialNumber, PCHAR pcDescription);
 
-       FT_STATUS GetDeviceInfoDetail(DWORD numDevs);
+       FT_STATUS  GetDeviceInfoList(LPDWORD lpdwNumDevs);
 public:
        //
        // Device status

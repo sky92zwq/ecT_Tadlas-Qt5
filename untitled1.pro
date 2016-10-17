@@ -38,4 +38,7 @@ FORMS    += mainwindow.ui \
 
 LIBS += ftd2xx.dll
 
+RESOURCES += \
+    rsc.qrc
+
 

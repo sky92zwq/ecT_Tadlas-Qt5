@@ -39,6 +39,7 @@ void myPaintusb::paintEvent(QPaintEvent *)
 void myPaintusb::setpoints(QVector<float> &vec,float max,float min)
 {
 
+    if(max==min)min=0;
     float maxmingap=max-min;
     showlong=vec.count();
     maxtext=max;

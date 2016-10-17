@@ -1,6 +1,6 @@
 #include "mythreads.h"
 #include <QDebug>
-#include <sys/time.h>
+
 
 
 /// \brief RWThread::.........................

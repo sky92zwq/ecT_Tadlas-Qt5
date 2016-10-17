@@ -183,4 +183,16 @@ FT_STATUS CS_ftfunction::GetDeviceInfoDetail(DWORD dwIndex, LPDWORD lpdwFlags, L
         return (*m_pGetDeviceInfoDetail)(dwIndex, lpdwFlags, lpdwType, lpdwID, lpdwLocId, pcSerialNumber, pcDescription, &m_ftHandle);
 }
 
-FT_STATUS CS_ftfunction::GetDeviceInfoDetail(DWORD numDevs){}
+FT_STATUS CS_ftfunction::GetDeviceInfoList(LPDWORD lpdwNumDevs)
+{
+
+    devInfo =(FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*getnumDEv());
+    this->m_pGetDeviceInfoList=(CS_ftfunction::PtrToGetDeviceInfoList)this->resolve("FT_GetDeviceInfoList");
+    if(this->m_pGetDeviceInfoList==NULL){
+        return FT_INVALID_HANDLE;
+    }
+    else
+        return (*m_pGetDeviceInfoList)(devInfo,lpdwNumDevs);
+}
+
+
