@@ -1,4 +1,4 @@
-#ifndef MYPAINTUSB_H
+﻿#ifndef MYPAINTUSB_H
 #define MYPAINTUSB_H
 
 #include <QWidget>
@@ -18,7 +18,6 @@ public:
 
     void paintEvent(QPaintEvent *);
     void setpoints(QVector<float> &vec, float max, float min);
-    void resizeEvent(QResizeEvent *);
 signals:
 
 public slots:

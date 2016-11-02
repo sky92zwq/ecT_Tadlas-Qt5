@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -23,7 +23,7 @@
 #include "ectclass.h"
 #include <qcombobox.h>
 #include <qlabel.h>
-#include <showwidget.h>
+#include <myshowwidget.h>
 
 
 namespace Ui {

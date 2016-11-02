@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include "tdlasdialog.h"
@@ -78,8 +78,8 @@ MainWindow::~MainWindow()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
 
-    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
-    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
+//    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
+//    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
 }
 
 
@@ -99,7 +99,7 @@ void MainWindow::openusb()//closeusb action
     int i=0;
     if(!usb.isopened()){
         for(;i<numdev;i++){
-            if(QString(usb.devInfo[i].SerialNumber)==QString("FTPPCZOA")){
+            if(QString(usb.devInfo[i].Description)==QString("USB 2.0<-> ECT Core Board A")){
                 label+=QString::number(i);
                 label+=": ";
                 label+=usb.status.at(usb.Open(i));
@@ -329,8 +329,8 @@ void MainWindow::reconstruct()
 {
     statusdock->hide();
     ectdock->hide();
-    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
-    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
+//    QApplication::postEvent(showwid->paintusbect, new QEvent(QEvent::Resize));
+//    QApplication::postEvent(showwid->paintusbect_2, new QEvent(QEvent::Resize));
 
 }
 
@@ -339,7 +339,7 @@ void MainWindow::drawECTusbdata(argfordraw *arg)
 
 
     (showwid->paintusbect)->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
-    (showwid->paintusbect)->update();
+//    (showwid->paintusbect)->update();
     //arg->tran.clear();
 
 }
@@ -347,7 +347,7 @@ void MainWindow::drawECTusbdata(argfordraw *arg)
 void MainWindow::drawECTonecircledata(argfordraw *arg)
 {
     (showwid->paintusbect_2)->setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
-    (showwid->paintusbect_2)->update();
+//    (showwid->paintusbect_2)->update();
 
 }
 

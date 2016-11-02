@@ -1,4 +1,4 @@
-#include "mypaintusb.h"
+﻿#include "mypaintusb.h"
 
 myPaintusb::myPaintusb(QWidget *parent, int datalong) : QWidget(parent)
 {
@@ -18,7 +18,7 @@ myPaintusb::myPaintusb(QWidget *parent, int datalong) : QWidget(parent)
 
 myPaintusb::~myPaintusb()
 {
-//    free(points);
+    free(points);
 }
 
 void myPaintusb::paintEvent(QPaintEvent *)
@@ -39,12 +39,13 @@ void myPaintusb::paintEvent(QPaintEvent *)
 void myPaintusb::setpoints(QVector<float> &vec,float max,float min)
 {
 
-    if(max==min)min=0;
-    float maxmingap=max-min;
+    double maxmingap;
+    if (max == min) min=0;
+    maxmingap=max-min;
     showlong=vec.count();
     maxtext=max;
     mintext=min;
-    showgap=(float)this->width()/showlong;
+    showgap=(double)this->width()/showlong;
 
 
     for(int i=0;i<showlong;i++){
@@ -54,11 +55,7 @@ void myPaintusb::setpoints(QVector<float> &vec,float max,float min)
 
     }
 
-
+    update();
 }
 
-void myPaintusb::resizeEvent(QResizeEvent *)
-{
-    this->resize(parentWidget()->size());
 
-}

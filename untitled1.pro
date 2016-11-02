@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT += opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,10 +17,11 @@ SOURCES += main.cpp\
     cs_ftfunction.cpp \
     ectclass.cpp \
     mypaintusb.cpp \
-    showwidget.cpp \
     mainwindow.cpp \
     mythreads.cpp \
-    tdlasdialog.cpp
+    tdlasdialog.cpp \
+    myopenglwid.cpp \
+    myshowwidget.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -29,7 +31,8 @@ HEADERS  += mainwindow.h \
     mythreads.h \
     mypaintusb.h \
     ectclass.h \
-    showwidget.h
+    myopenglwid.h \
+    myshowwidget.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui

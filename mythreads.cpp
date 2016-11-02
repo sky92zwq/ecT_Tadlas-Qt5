@@ -1,4 +1,4 @@
-#include "mythreads.h"
+﻿#include "mythreads.h"
 #include <QDebug>
 
 
@@ -45,11 +45,11 @@ void processThreadobj::transferforECTdrawing(unsigned char *buffer, int bufferlo
 {
     //0.002s满足ECT
     int i=0;
-    tranarg.maxtransfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+    tranarg.maxtransfer=(buffer[i]*256+buffer[i+1])/**64/1*3.14/2/400*2/8192*1000*/;
     tranarg.mintransfer=tranarg.maxtransfer;
     tranarg.tran.clear();
     for(;i<bufferlong;){
-        transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+        transfer=(buffer[i]*256+buffer[i+1])/**64/1*3.14/2/400*2/8192*1000*/;
         /*if(transfer!=ect->indicator())*/tranarg.tran<<transfer;
         if(transfer>tranarg.maxtransfer)tranarg.maxtransfer=transfer;
         if(transfer<tranarg.mintransfer)tranarg.mintransfer=transfer;
@@ -62,7 +62,7 @@ void processThreadobj::transferforECTdrawing(unsigned char *buffer, int bufferlo
     int nextgo=1;
     int onecirclecount=0;
     for(;i<bufferlong;){
-        transfer=(buffer[i]*256+buffer[i+1])*256/8*3.14/2/400*2/8192*1000;
+        transfer=(buffer[i]*256+buffer[i+1])/**64/1*3.14/2/400*2/8192*1000*/;
         if(onecirclecount==10){
             emit sigdrawECTonecircledata(&onecirclearg);
             onecirclecount=0;
@@ -70,7 +70,7 @@ void processThreadobj::transferforECTdrawing(unsigned char *buffer, int bufferlo
         if(transfer==ect->indicator())
         {
             onecirclecount++;
-            onecirclearg.maxtransfer=(buffer[i+2]*256+buffer[i+3])*256/8*3.14/2/400*2/8192*1000;
+            onecirclearg.maxtransfer=(buffer[i+2]*256+buffer[i+3])/**64/1*3.14/2/400*2/8192*1000*/;
             onecirclearg.mintransfer=onecirclearg.maxtransfer;
             onecirclearg.tran.clear();
             nextgo=0;
