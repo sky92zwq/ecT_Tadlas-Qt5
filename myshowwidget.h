@@ -1,10 +1,10 @@
-#ifndef SHOWWIDGET_H
+﻿#ifndef SHOWWIDGET_H
 #define SHOWWIDGET_H
 #include <QtCore>
 #include <QVBoxLayout>
 #include <QFrame>
 #include "mypaintusb.h"
-#include "myopenglwid.h"
+#include "glwidget.h"
 
 ///
 /// \brief The showwidget class
@@ -26,7 +26,7 @@ public:
     myPaintusb *paintusbect;
     myPaintusb *paintusbect_2;
 
-	myOpenGLwid *openglwid;
+    GLWidget * openGL;
 
 };
 

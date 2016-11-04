@@ -20,8 +20,8 @@ SOURCES += main.cpp\
     mainwindow.cpp \
     mythreads.cpp \
     tdlasdialog.cpp \
-    myopenglwid.cpp \
-    myshowwidget.cpp
+    myshowwidget.cpp \
+    glwidget.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -31,8 +31,8 @@ HEADERS  += mainwindow.h \
     mythreads.h \
     mypaintusb.h \
     ectclass.h \
-    myopenglwid.h \
-    myshowwidget.h
+    myshowwidget.h \
+    glwidget.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui
