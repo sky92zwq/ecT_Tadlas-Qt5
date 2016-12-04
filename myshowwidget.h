@@ -26,7 +26,7 @@ public:
     myPaintusb *paintusbect;
     myPaintusb *paintusbect_2;
 
-    GLWidget * openGL;
+    GLWidget * openglwid;
 
 };
 

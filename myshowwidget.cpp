@@ -22,11 +22,11 @@ showwidget::showwidget(QWidget *parent)
 //    format.setVersion(1, 1);
 //    format.setProfile(QSurfaceFormat::CoreProfile);
 //    openglwid->setFormat(format); // must be called before the widget or its parent window gets shown
-    openGL = new GLWidget;
+    openglwid = new GLWidget;
 
 
 
-    mainlayout->addWidget(openGL,0,0);
+    mainlayout->addWidget(openglwid,0,0);
 	mainlayout->addLayout(mainshowlayout, 0, 1);
 
 
@@ -38,7 +38,7 @@ showwidget::~showwidget()
     delete paintusbect;
     delete ECTpaintframe;
     delete ECTpaintframe_2;
-    delete openGL;
+    delete openglwid;
 
     delete mainshowlayout;
 	delete mainlayout;

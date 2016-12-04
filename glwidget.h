@@ -1,4 +1,4 @@
-﻿/****************************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
@@ -56,7 +56,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
-#include "logo.h"
+
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -79,7 +79,7 @@ public slots:
 
 signals:
     void xRotationChanged(int angle);
-    void yRotationChanged(int angle);
+	void yRotationChanged(int angle);
     void zRotationChanged(int angle);
 
 protected:
@@ -89,10 +89,15 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
+public slots:
+;
+	void updateReconstructRGB(double *, double*, double*);
+
 private:
     void setupVertexAttribs();
     void setvertexposition();
-    void setvertexcolor(float *g);
+	void setvertexcolor();
+	void setvertexcolor(double * R, double * G, double * B);
     GLfloat Position[48*48*4*2];
     QVector<QVector2D> verpos;
     GLfloat Color[48*48*4*3];
@@ -103,7 +108,7 @@ private:
     int m_yRot;
     int m_zRot;
     QPoint m_lastPos;
-    Logo m_logo;
+
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_logoVbo;
     QOpenGLShaderProgram *m_program;

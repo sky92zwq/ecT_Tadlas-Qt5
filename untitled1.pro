@@ -5,7 +5,6 @@
 #-------------------------------------------------
 
 QT       += core gui
-QT += opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,7 +20,9 @@ SOURCES += main.cpp\
     mythreads.cpp \
     tdlasdialog.cpp \
     myshowwidget.cpp \
-    glwidget.cpp
+    glwidget.cpp \
+    matlabhelper.cpp \
+    mode.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -32,16 +33,22 @@ HEADERS  += mainwindow.h \
     mypaintusb.h \
     ectclass.h \
     myshowwidget.h \
-    glwidget.h
+    glwidget.h \
+    matlabhelper.h \
+    mode.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui
 
 
 
-LIBS += ftd2xx.dll
+#LIBS += ftd2xx.dll
 
 RESOURCES += \
     rsc.qrc
+
+LIBS += LBP_Circular_ECT_16.lib \
+    calderon_circle_16_electrodes_ssj.lib \
+    calderon_circle_16_electrodes_ssjwq.lib
 
 

@@ -84,7 +84,7 @@ QSize GLWidget::minimumSizeHint() const
 
 QSize GLWidget::sizeHint() const
 {
-    return QSize(400, 400);
+    return QSize(300, 300);
 }
 
 static void qNormalizeAngle(int &angle)
@@ -192,7 +192,7 @@ static const char *vertexShader =
 
 "attribute  vec2 vposition;\n"
 "attribute  vec3 vcolor;\n"
-"out vec3 varyingcolor;\n"
+"varying vec3 varyingcolor;\n"
 "uniform mat4 projMatrix;\n"
 "uniform mat4 mvMatrix;\n"
 "void main() {\n"
@@ -203,8 +203,7 @@ static const char *vertexShader =
 
 static const char *fragmentShader =
 
-"in vec3 varyingcolor;\n"
-"out vec4 vfragcolor;\n"
+"varying highp vec3 varyingcolor;\n"
 "void main() {\n"
 
 "   gl_FragColor = vec4(varyingcolor, 1.0f);\n"
@@ -253,24 +252,12 @@ void GLWidget::setvertexposition()//set vertex position
     }
 }
 
-void GLWidget::setvertexcolor(float *g)
+void GLWidget::setvertexcolor()
 {
     for(int i=0;i<48;i++)
     {
         for(int j=0;j<48;j++)
         {
-//            Color[48*4*i+12*j]=(GLfloat)0.1;//r
-//            Color[48*4*i+12*j+1]=(GLfloat)0.2;//g
-//            Color[48*4*i+12*j+2]=(GLfloat)0.3;//b
-//            Color[48*4*i+12*j+3]=(GLfloat)0.1;
-//            Color[48*4*i+12*j+4]=(GLfloat)0.2;
-//            Color[48*4*i+12*j+5]=(GLfloat)0.3;
-//            Color[48*4*i+12*j+6]=(GLfloat)0.1;
-//            Color[48*4*i+12*j+7]=(GLfloat)0.2;
-//            Color[48*4*i+12*j+8]=(GLfloat)0.3;
-//            Color[48*4*i+12*j+9]=(GLfloat)0.1;
-//            Color[48*4*i+12*j+10]=(GLfloat)0.8;
-//            Color[48*4*i+12*j+11]=(GLfloat)0.9;
             vercol.append(QVector3D(0.1,0.2,0.3));
             vercol.append(QVector3D(0.1,0.2,0.3));
             vercol.append(QVector3D(0.1,0.2,0.3));
@@ -283,6 +270,49 @@ void GLWidget::setvertexcolor(float *g)
         Color[3*i+1]=vercol.at(i).y();
         Color[3*i+2]=vercol.at(i).z();
     }
+}
+void GLWidget::setvertexcolor(double *R, double *G, double *B)
+{
+   int go=0;
+	for (int i = 0; i<48; i++)
+	{
+		for (int j = 0; j<48; j++)
+		{
+//            if(
+//               ((verpos.at(4*(48*i+j)).x()+0.005f)*(verpos.at(4*(48*i+j)).x()+0.005f)
+//                +(verpos.at(4*(48*i+j)).y()+0.005)*(verpos.at(4*(48*i+j)).y()+0.005))<0.19*0.19
+//               )
+//            {
+
+//                vercol.append(QVector3D(R[go], G[go], B[go]));
+//                vercol.append(QVector3D(R[go], G[go], B[go]));
+//                vercol.append(QVector3D(R[go], G[go], B[go]));
+//                vercol.append(QVector3D(R[go], G[go], B[go]));
+//                go++;
+//            }
+//            else
+//            {
+//                vercol.append(QVector3D(1.0, 1.0, 1.0));
+//                vercol.append(QVector3D(1.0, 1.0, 1.0));
+//                vercol.append(QVector3D(1.0, 1.0, 1.0));
+//                vercol.append(QVector3D(1.0, 1.0, 1.0));
+
+//            }
+            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
+            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
+            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
+            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
+
+
+
+		}
+	}
+	for (int i = 0; i<vercol.count(); i++)
+	{
+		Color[3 * i] = vercol.at(i).x();
+		Color[3 * i + 1] = vercol.at(i).y();
+		Color[3 * i + 2] = vercol.at(i).z();
+	}
 }
 
 void GLWidget::initializeGL()
@@ -297,7 +327,7 @@ void GLWidget::initializeGL()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
 
     initializeOpenGLFunctions();
-    glClearColor(1, 1, 1, m_transparent ? 0 : 1);
+    glClearColor(0,0,0.1, m_transparent ? 0 : 1);
 
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, 1 ? vertexShader : vertexShaderSource);
@@ -325,7 +355,7 @@ void GLWidget::initializeGL()
     m_logoVbo.allocate(NULL, sizeof(Position)+sizeof(Color));
     setvertexposition();
     m_logoVbo.write(0,Position,sizeof(Position));
-    setvertexcolor(NULL);
+    setvertexcolor();
     m_logoVbo.write(sizeof(Position),Color,sizeof(Color));
 
     // Store the vertex attribute bindings for the program.
@@ -339,6 +369,13 @@ void GLWidget::initializeGL()
 //    m_program->setUniformValue(m_lightPosLoc, QVector3D(0, 0, 70));
 
     m_program->release();
+}
+
+void GLWidget::updateReconstructRGB(double *R, double *G, double *B)
+{
+    vercol.clear();
+	setvertexcolor(R, G, B);
+	update();
 }
 
 void GLWidget::setupVertexAttribs()
@@ -364,6 +401,9 @@ void GLWidget::paintGL()
     m_world.rotate(m_zRot / 16.0f, 0, 0, 1);
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+    m_logoVbo.bind();
+    m_logoVbo.write(sizeof(Position), Color, sizeof(Color));
+
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_proj);
     m_program->setUniformValue(m_mvMatrixLoc, m_camera * m_world);
@@ -372,6 +412,7 @@ void GLWidget::paintGL()
 
     glDrawArrays(GL_QUADS, 0, verpos.count());
 
+    m_logoVbo.release();
     m_program->release();
 }
 

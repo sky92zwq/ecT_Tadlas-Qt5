@@ -24,6 +24,10 @@
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <myshowwidget.h>
+#include "mode.h"
+#include <QPushButton>
+#include "matlabhelper.h"
+#include <QListWidgetItem>
 
 
 namespace Ui {
@@ -66,10 +70,6 @@ protected slots:
 
     void reconstruct();
 
-    void drawECTusbdata(argfordraw *arg);
-
-    void drawECTonecircledata(argfordraw *arg);
-
     void drawTDlasusbdata(argfordraw *arg);
 
     void setrwthread1null();
@@ -85,6 +85,9 @@ private slots:
     void childrenWidstatus(QString &str);//看子窗口
 
     void setelectrodenum(const QString &text);
+    void setectdifference(const QString &differ);
+    void ectvoidCalibration();
+    void ectfullCalibration();
 signals:
 
     void startacquisition(CS_ftfunction &usb,QString savedirectory);
@@ -137,33 +140,45 @@ private:
     QAction *caldelong;
 
     showwidget *showwid;
-
+public slots:
+    void changelistitemcolor(QListWidgetItem *current, QListWidgetItem *previous);
 private:
     QDockWidget *statusdock;
-    QWidget *ectdockcontent;
+    class mystatuscontent:public QWidget
+    {
+    public:
+        QSize sizeHint() const
+        {
+            return QSize(900, 100); /* 在这里定义dock的初始大小 */
+        }
+
+    };
+    mystatuscontent*statuscontent;
+    QGridLayout *statuslayout;
+    QWidget     *ectdockcontent;
     QDockWidget *ectdock;
     QGridLayout *ectdocklayout;
-    QComboBox *electrode_numberbox;
-    QLabel *electrode_numberlabel;
-
+    QComboBox   *electrode_numberbox;
+    QLabel      *electrode_numberlabel;
+    QPushButton *voidbutton,*fullbutton;
+    QLabel      *chosedifference;
+    QComboBox   *chosedifferencebox;
 
 public:
     QMutex *lockthread;
     RWThread *rwthread1;
     RWThread *rwthread2;
     processThreadobj *processthreadobj;
-    processThread *processthread;
+    QThread *processthread;
+    QThread *matlabthread;
+    MatlabHelper *matlabhelper;
 
     QByteArray RWbyte;
-public:
-    enum ET{
-        ECT,
-        TDlas
-    };
-    ET mode;
+
+
 private:
     bool needstop;
-
+    bool reconstructflag;
 };
 
 
