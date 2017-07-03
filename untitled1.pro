@@ -35,7 +35,26 @@ HEADERS  += mainwindow.h \
     myshowwidget.h \
     glwidget.h \
     matlabhelper.h \
-    mode.h
+    mode.h \
+    matlab/calderon_circle_12_electrodes_ssj.h \
+    matlab/calderon_circle_12_electrodes_ssj_types.h \
+    matlab/calderon_circle_16_electrodes_ssj.h \
+    matlab/calderon_circle_16_electrodes_ssj_types.h \
+    matlab/calderon_circle_32_electrodes_ssj.h \
+    matlab/calderon_circle_32_electrodes_ssj_types.h \
+    matlab/LBP_Circular_ECT_16.h \
+    matlab/LBP_Circular_ECT_16_types.h \
+    matlab/mat.h \
+    matlab/matrix.h \
+    matlab/rt_defines.h \
+    matlab/rt_nonfinite.h \
+    matlab/rtwtypes.h \
+    matlab/tmwtypes.h \
+    matlabdynamic/calderon_circle_16_electrodes_ssjwq.h \
+    matlabdynamic/calderon_circle_16_electrodes_ssjwq_types.h \
+    matlabdynamic/rt_defines.h \
+    matlabdynamic/rt_nonfinite.h \
+    matlabdynamic/rtwtypes.h
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui
@@ -47,8 +66,27 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     rsc.qrc
 
-LIBS += LBP_Circular_ECT_16.lib \
-    calderon_circle_16_electrodes_ssj.lib \
-    calderon_circle_16_electrodes_ssjwq.lib
+#LIBS += LBP_Circular_ECT_16.lib \
+#    calderon_circle_16_electrodes_ssj.lib \
+#    calderon_circle_16_electrodes_ssjwq.lib
+
+DISTFILES += \
+    matlabcoder \
+    matlab/calderon_circle_12_electrodes_ssj.lib \
+    matlab/calderon_circle_16_electrodes_ssj.lib \
+    matlab/calderon_circle_32_electrodes_ssj.lib \
+    matlab/LBP_Circular_ECT_16.lib \
+    matlab/libmat.lib \
+    matlab/libmx.lib \
+    matlab/calderon_circle_12_electrodes_ssj.dll \
+    matlab/calderon_circle_16_electrodes_ssj.dll \
+    matlab/calderon_circle_32_electrodes_ssj.dll \
+    matlab/LBP_Circular_ECT_16.dll \
+    matlab/libmat.dll \
+    matlab/libmx.dll \
+    matlab/libut.dll \
+    matlab/Sen_matrix_16.txt \
+    matlabdynamic/calderon_circle_16_electrodes_ssjwq.lib \
+    matlabdynamic/calderon_circle_16_electrodes_ssjwq.dll
 
 
