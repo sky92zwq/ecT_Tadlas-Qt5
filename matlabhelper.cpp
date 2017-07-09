@@ -4,12 +4,17 @@
 MatlabHelper::MatlabHelper(QObject *parent)
 	: QObject(parent)
 {
+    //initialize ECT
     ect=ECTClass::getInstance();
     voidsum=0;
     fullsum=0;
-    //readsenMatrix();
     m_hold_up[0]=0;
 	z = new double[ect->measurenumber()];
+
+    //initialize TDLAS
+    rwobj.readtxt(tdlas_L,"./L.txt");
+    rwobj.readtxt(tdlas_b,"./b.txt");
+
     ZeroMemory(R_temp,sizeof(R_temp));
     ZeroMemory(G_temp,sizeof(G_temp));
     ZeroMemory(B_temp,sizeof(B_temp));
@@ -23,18 +28,7 @@ MatlabHelper::~MatlabHelper()
 
 }
 
-void MatlabHelper::readsenMatrix()
-{
-    QFile senfile("./matlab/Sen_matrix_16.txt");
-    if (!senfile.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
 
-    QTextStream outsenfile(&senfile);
-    outsenfile.skipWhiteSpace();
-    for(int i=0;i<1716*120;i++) {
-        outsenfile>>senmatrix_16[i];
-    }
-}
 
 void MatlabHelper::adddynamiclinklib()
 {
@@ -46,32 +40,23 @@ void MatlabHelper::adddynamiclinklib()
 }
 
 
+
 void MatlabHelper::process1cirledata(float *onearg)
 {
     
-//    for(int i=0;i<ect->measurenumber();i++)
-//    {
-//        voidsum += (onearg->tran.at(i) - ect->datavoid.at(i));
-////        fullsum += (onearg->tran.at(i) - ect->datafull.at(i));
 
-//    }
-//    if (voidsum < 0.05)
-//            ZeroMemory(z,sizeof(z));
-//    else if (fullsum < 0.05)
-//        for(int i=0;i<ect->measurenumber();i++)z[i] = 1;
-//    else
-//        if (ect->alreadyFullcalibtrated())
-//             for(int i=0;i<ect->measurenumber();i++)
-//                 z[i] = (onearg->tran.at(i) - ect->datavoid.at(i))
-//                  / (ect->datafull.at(i) - ect->datavoid.at(i));
-//        else
-//    fromthread=onearg->tran;
-             for(int i=0;i<ect->measurenumber();i++)z[i] = onearg[i]-ect->datavoid.data()[i];
-//	//matlab .lib
-    time.start();
-    calderon_circle_16_electrodes_ssjwq(z,4,R_temp,G_temp,B_temp);
-    //(*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
-    qDebug()<<time.elapsed()/1000.0;
-    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
-    emit sigreconstructRGB(R_temp,G_temp,B_temp);
+//    for(int i=0;i<ect->measurenumber();i++)z[i] = onearg[i]-ect->datavoid.data()[i];
+////	//matlab .lib
+//    time.start();
+////    calderon_circle_16_electrodes_ssjwq(z,4,R_temp,G_temp,B_temp);
+//    calderon_circle_16_electrodes_ssj(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
+////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
+//    qDebug()<<time.elapsed()/1000.0;
+//    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
+        time.start();
+    Tikhonov(tdlas_L,tdlas_b,tdlas_k,tdlas_x0,tdlas_f,tdlas_fsize);
+        qDebug()<<time.elapsed()/1000.0;
+        qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
+//    rwobj.writetxt(tdlas_f,tdlas_fsize,"./f0709.txt");
+//    emit sigreconstructRGB(R_temp,G_temp,B_temp);
 }

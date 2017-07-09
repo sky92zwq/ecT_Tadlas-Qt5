@@ -356,6 +356,7 @@ void MainWindow::reconstruct()
 
         matlabthread=new QThread;
         matlabhelper=new MatlabHelper;
+//        matlabhelper->process1cirledata(NULL);//0709
         matlabhelper->moveToThread(matlabthread);
         connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
         //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);

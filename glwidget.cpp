@@ -197,7 +197,7 @@ static const char *vertexShader =
 "uniform mat4 mvMatrix;\n"
 "void main() {\n"
 "   varyingcolor=vcolor;\n"
-"   gl_Position = projMatrix * mvMatrix * vec4(vposition,0.1f,1.0f);\n"
+"   gl_Position = projMatrix * mvMatrix * vec4(vposition,0.1,1.0);\n"
  //       "varyingcolor=vec3(vposition,0.3f);\n"
 "}\n";
 
@@ -206,112 +206,77 @@ static const char *fragmentShader =
 "varying highp vec3 varyingcolor;\n"
 "void main() {\n"
 
-"   gl_FragColor = vec4(varyingcolor, 1.0f);\n"
+"   gl_FragColor = vec4(varyingcolor, 1.0);\n"
 "}\n";
 void GLWidget::setvertexposition()//set vertex position
 {
 
-    int flagcount=0;
+//    int flagcount=0;
     GLfloat DELTA=0.01;
-    for(int i=0;i<48;i++)
-    {
-        verpos.append(QVector2D(-0.2f,-0.2f+i*DELTA));
-        flagcount=0;
-        for(int j=1;j<48*4;j++)
+
+    float vpos_x;
+    float vpos_y;
+    int step=12;
+    int len=sizeof(Position)/sizeof(Position[0])/step;
+    int squrelen=sqrt(len);
+        vpos_x=-0.2;
+        vpos_y=-0.2-DELTA;
+        for(int i=0;i<len;i++)
         {
-            switch (flagcount)
+            if (i%squrelen==0)
             {
-            case 0:
-                verpos.append(QVector2D(verpos.last().x(), verpos.last().y() + DELTA));
-                break;
-
-            case 1:
-                verpos.append(QVector2D(verpos.last().x()+ DELTA, verpos.last().y() ));
-                break;
-            case 2:
-                verpos.append(QVector2D(verpos.last().x(), verpos.last().y() - DELTA));
-                break;
-
-            case 3:
-                verpos.append(QVector2D(verpos.last().x(), verpos.last().y()));
-
-                flagcount=-1;
-                break;
-
-            default:
-                break;
+                int numr=i/squrelen;
+                vpos_x=-0.2;
+                vpos_y=-0.2+numr*DELTA;
             }
-            flagcount++;
+            Position[step*i] =vpos_x;
+            Position[step*i+1] = vpos_y;
+
+            Position[step*i+2] = Position[step*i];
+            Position[step*i+3] = Position[step*i+1]+DELTA;
+
+            Position[step*i+4] = Position[step*i+2]+DELTA;
+            Position[step*i+5] = Position[step*i+3];
+
+            Position[step*i+6] = Position[step*i+4];
+            Position[step*i+7] = Position[step*i+5];
+
+            Position[step*i+8] = Position[step*i+6];
+            Position[step*i+9] = Position[step*i+7]-DELTA;
+
+            Position[step*i+10] = Position[step*i+8]-DELTA;
+            Position[step*i+11] = Position[step*i+9];
+
+            vpos_x=Position[step*i+8];
+            vpos_y=Position[step*i+9];
         }
 
-    }
-    for(int i=0;i<verpos.count();i++)
-    {
-        Position[2*i] =verpos.at(i).x();
-        Position[2*i+1]= verpos.at(i).y();
-    }
 }
+
 
 void GLWidget::setvertexcolor()
 {
-    for(int i=0;i<48;i++)
+
+    int len=sizeof(Color)/sizeof(Color[0])/3;
+    for(int i=0;i<len;i++)
     {
-        for(int j=0;j<48;j++)
-        {
-            vercol.append(QVector3D(0.1,0.2,0.3));
-            vercol.append(QVector3D(0.1,0.2,0.3));
-            vercol.append(QVector3D(0.1,0.2,0.3));
-            vercol.append(QVector3D(0.1,0.8,0.9));
-        }
-    }
-    for(int i=0;i<vercol.count();i++)
-    {
-        Color[3*i]=vercol.at(i).x();
-        Color[3*i+1]=vercol.at(i).y();
-        Color[3*i+2]=vercol.at(i).z();
+        Color[3 * i] = 0.1;
+        Color[3 * i + 1] = 0.2;
+        Color[3 * i + 2] = 0.3;
     }
 }
 void GLWidget::setvertexcolor(double *R, double *G, double *B)
 {
-   int go=0;
-	for (int i = 0; i<48; i++)
+    int step=18;
+    int len=sizeof(Color)/sizeof(Color[0])/step;
+    for (int i = 0; i<len; i++)
 	{
-		for (int j = 0; j<48; j++)
-		{
-//            if(
-//               ((verpos.at(4*(48*i+j)).x()+0.005f)*(verpos.at(4*(48*i+j)).x()+0.005f)
-//                +(verpos.at(4*(48*i+j)).y()+0.005)*(verpos.at(4*(48*i+j)).y()+0.005))<0.19*0.19
-//               )
-//            {
+        for(int j=0;j<3;j++){
+            Color[step * i + 3*j] = R[i];
+            Color[step * i + 3*j + 1] = G[i];
+            Color[step * i + 3*j + 2] = B[i];
 
-//                vercol.append(QVector3D(R[go], G[go], B[go]));
-//                vercol.append(QVector3D(R[go], G[go], B[go]));
-//                vercol.append(QVector3D(R[go], G[go], B[go]));
-//                vercol.append(QVector3D(R[go], G[go], B[go]));
-//                go++;
-//            }
-//            else
-//            {
-//                vercol.append(QVector3D(1.0, 1.0, 1.0));
-//                vercol.append(QVector3D(1.0, 1.0, 1.0));
-//                vercol.append(QVector3D(1.0, 1.0, 1.0));
-//                vercol.append(QVector3D(1.0, 1.0, 1.0));
-
-//            }
-            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
-            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
-            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
-            vercol.append(QVector3D(R[48*i+j], G[48*i+j], B[48*i+j]));
-
-
-
-		}
-	}
-	for (int i = 0; i<vercol.count(); i++)
-	{
-		Color[3 * i] = vercol.at(i).x();
-		Color[3 * i + 1] = vercol.at(i).y();
-		Color[3 * i + 2] = vercol.at(i).z();
+        }
 	}
 }
 
@@ -373,7 +338,6 @@ void GLWidget::initializeGL()
 
 void GLWidget::updateReconstructRGB(double *R, double *G, double *B)
 {
-    vercol.clear();
 	setvertexcolor(R, G, B);
 	update();
 }
@@ -410,7 +374,7 @@ void GLWidget::paintGL()
 //    QMatrix3x3 normalMatrix = m_world.normalMatrix();
 //    m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
-    glDrawArrays(GL_QUADS, 0, verpos.count());
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(Position)/sizeof(Position[0])/2);
 
     m_logoVbo.release();
     m_program->release();

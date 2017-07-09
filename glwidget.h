@@ -98,10 +98,10 @@ private:
     void setvertexposition();
 	void setvertexcolor();
 	void setvertexcolor(double * R, double * G, double * B);
-    GLfloat Position[48*48*4*2];
-    QVector<QVector2D> verpos;
-    GLfloat Color[48*48*4*3];
-    QVector<QVector3D> vercol;
+    GLfloat Position[20*20*6*2];
+//    QVector<QVector2D> verpos;
+    GLfloat Color[20*20*6*3];
+//    QVector<QVector3D> vercol;
 
     bool m_core;
     int m_xRot;
