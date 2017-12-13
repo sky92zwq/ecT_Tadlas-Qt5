@@ -2,7 +2,7 @@
  * File: Tikhonov.h
  *
  * MATLAB Coder version            : 3.0
- * C/C++ source code generated on  : 06-Jul-2017 15:36:37
+ * C/C++ source code generated on  : 10-Jul-2017 15:21:32
  */
 
 #ifndef __TIKHONOV_H__
@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
   extern void Tikhonov(const double A[24000], const double b[60], int K, const
-                       double f0[400], double f_data[], int f_size[2]);
+                       double f0[400], double f[400]);
 
 #ifdef __cplusplus
 

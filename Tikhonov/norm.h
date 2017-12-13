@@ -2,7 +2,7 @@
  * File: norm.h
  *
  * MATLAB Coder version            : 3.0
- * C/C++ source code generated on  : 06-Jul-2017 15:36:37
+ * C/C++ source code generated on  : 10-Jul-2017 15:33:55
  */
 
 #ifndef __NORM_H__
@@ -23,7 +23,6 @@ extern "C" {
 
 #endif
 
-  extern double b_norm(const double x[460]);
   extern double norm(const double x[400]);
 
 #ifdef __cplusplus

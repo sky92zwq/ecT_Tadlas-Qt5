@@ -26,6 +26,8 @@ public:
 	~MatlabHelper();
 
     void adddynamiclinklib();//if use dll
+    void graytoRGB(double *R, double*G, double*B, double* f, double maxf);
+    double maxf(double*f,int len);
     RWhelper<double> rwobj;
 
 private:
@@ -36,6 +38,9 @@ private:
     double tdlas_x0[400]={0};
     double tdlas_f[400]={0};
     int tdlas_fsize[2]={400,1};
+    double tdlas_R_temp[400];
+    double tdlas_G_temp[400];
+    double tdlas_B_temp[400];
 private:
     ECTClass *ect;
     float voidsum;

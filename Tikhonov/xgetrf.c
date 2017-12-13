@@ -2,7 +2,7 @@
  * File: xgetrf.c
  *
  * MATLAB Coder version            : 3.0
- * C/C++ source code generated on  : 09-Jul-2017 23:31:12
+ * C/C++ source code generated on  : 10-Jul-2017 15:21:32
  */
 
 /* Include Files */
@@ -20,7 +20,7 @@
  */
 void xgetrf(double A[160000], int ipiv[400])
 {
-  int i3;
+  int i1;
   int j;
   int c;
   int jA;
@@ -30,8 +30,8 @@ void xgetrf(double A[160000], int ipiv[400])
   double s;
   int b_j;
   int ijA;
-  for (i3 = 0; i3 < 400; i3++) {
-    ipiv[i3] = 1 + i3;
+  for (i1 = 0; i1 < 400; i1++) {
+    ipiv[i1] = 1 + i1;
   }
 
   for (j = 0; j < 399; j++) {
@@ -54,8 +54,8 @@ void xgetrf(double A[160000], int ipiv[400])
         xswap(A, j + 1, j + jA);
       }
 
-      i3 = (c - j) + 400;
-      for (jA = c + 1; jA + 1 <= i3; jA++) {
+      i1 = (c - j) + 400;
+      for (jA = c + 1; jA + 1 <= i1; jA++) {
         A[jA] /= A[c];
       }
     }
@@ -66,8 +66,8 @@ void xgetrf(double A[160000], int ipiv[400])
       smax = A[jy];
       if (A[jy] != 0.0) {
         ix = c + 1;
-        i3 = (jA - j) + 800;
-        for (ijA = 401 + jA; ijA + 1 <= i3; ijA++) {
+        i1 = (jA - j) + 800;
+        for (ijA = 401 + jA; ijA + 1 <= i1; ijA++) {
           A[ijA] += A[ix] * -smax;
           ix++;
         }

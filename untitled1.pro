@@ -24,21 +24,7 @@ SOURCES += main.cpp\
     matlabhelper.cpp \
     mode.cpp \
     tdlasclass.cpp \
-    Tikhonov/div.c \
-    Tikhonov/eml_rand_mt19937ar_stateful.c \
-    Tikhonov/eye.c \
-    Tikhonov/landweber.c \
-    Tikhonov/norm.c \
-    Tikhonov/normest.c \
-    Tikhonov/rand.c \
-    Tikhonov/rt_nonfinite.c \
-    Tikhonov/rtGetInf.c \
-    Tikhonov/rtGetNaN.c \
-    Tikhonov/Tikhonov.c \
-    Tikhonov/Tikhonov_data.c \
-    Tikhonov/Tikhonov_initialize.c \
-    Tikhonov/Tikhonov_terminate.c \
-    Tikhonov/xgemv.c
+
 
 
 HEADERS  += mainwindow.h \
@@ -73,23 +59,7 @@ HEADERS  += mainwindow.h \
     matlabdynamic/rtwtypes.h \
     tdlasclass.h \
     rwhelper.h \
-    Tikhonov/div.h \
-    Tikhonov/eml_rand_mt19937ar_stateful.h \
-    Tikhonov/eye.h \
-    Tikhonov/landweber.h \
-    Tikhonov/norm.h \
-    Tikhonov/normest.h \
-    Tikhonov/rand.h \
-    Tikhonov/rt_nonfinite.h \
-    Tikhonov/rtGetInf.h \
-    Tikhonov/rtGetNaN.h \
-    Tikhonov/rtwtypes.h \
-    Tikhonov/Tikhonov.h \
-    Tikhonov/Tikhonov_data.h \
-    Tikhonov/Tikhonov_initialize.h \
-    Tikhonov/Tikhonov_terminate.h \
-    Tikhonov/Tikhonov_types.h \
-    Tikhonov/xgemv.h
+
 
 FORMS    += mainwindow.ui \
     tdlasdialog.ui

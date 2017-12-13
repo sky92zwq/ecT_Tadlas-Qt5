@@ -212,7 +212,7 @@ void GLWidget::setvertexposition()//set vertex position
 {
 
 //    int flagcount=0;
-    GLfloat DELTA=0.01;
+    GLfloat DELTA=0.02;
 
     float vpos_x;
     float vpos_y;
@@ -271,7 +271,7 @@ void GLWidget::setvertexcolor(double *R, double *G, double *B)
     int len=sizeof(Color)/sizeof(Color[0])/step;
     for (int i = 0; i<len; i++)
 	{
-        for(int j=0;j<3;j++){
+        for(int j=0;j<6;j++){
             Color[step * i + 3*j] = R[i];
             Color[step * i + 3*j + 1] = G[i];
             Color[step * i + 3*j + 2] = B[i];

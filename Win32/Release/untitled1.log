@@ -1,0 +1,4 @@
+﻿  base_alg.cpp
+base_alg.cpp(5): warning C4100: “parent”: 未引用的形参
+  untitled1.vcxproj -> C:\Users\B713_John\Documents\untitled1\release\untitled1.exe
+  untitled1.vcxproj -> release\untitled1.pdb (Full PDB)

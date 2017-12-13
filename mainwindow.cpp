@@ -1,7 +1,7 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
 #include "tdlasdialog.h"
+#include <QDebug>
 
 
 
@@ -34,7 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     if (mode::m_mode ==mode::TDlas)
         tdlas();
 //    stopdataacquisition_action->setEnabled(false);
-
+	openglThread = new QThread;
+	tik_worker = new Tikhonov_Alg("laplacian");
 }
 
 MainWindow::~MainWindow()
@@ -350,27 +351,33 @@ void MainWindow::startdataacquisition()//开始采集
 
 void MainWindow::reconstruct()
 {
-    if(ect->alreadyVoidcalibtrated() && needstop ){
-        if(!reconstructflag)reconstructflag=true;
-        else return;
+    if(1){//ect->alreadyVoidcalibtrated() && needstop ){
+        //if(!reconstructflag)reconstructflag=true;
+        //else return;
+	
+		tik_worker->moveToThread(openglThread);
+		tik_worker->Tikhonov();
+		tik_worker->land_worker.set_RGB();
+		showwid->openglwid->updateReconstructRGB(tik_worker->land_worker.R.data(),
+			tik_worker->land_worker.G.data(), tik_worker->land_worker.B.data());
 
-        matlabthread=new QThread;
-        matlabhelper=new MatlabHelper;
+//        matlabthread=new QThread;
+//        matlabhelper=new MatlabHelper;
+//        matlabhelper->moveToThread(matlabthread);
+//        connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
+//        //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);
+//        connect(matlabhelper,&MatlabHelper::sigreconstructRGB,showwid->openglwid,&GLWidget::updateReconstructRGB,Qt::DirectConnection);
 //        matlabhelper->process1cirledata(NULL);//0709
-        matlabhelper->moveToThread(matlabthread);
-        connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
-        //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);
-        connect(matlabhelper,&MatlabHelper::sigreconstructRGB,showwid->openglwid,&GLWidget::updateReconstructRGB,Qt::DirectConnection);
 
-        connect(matlabthread, &QThread::finished, matlabhelper, &QObject::deleteLater);
-        connect(matlabthread, &QThread::finished, matlabthread, &QObject::deleteLater);
+//        connect(matlabthread, &QThread::finished, matlabhelper, &QObject::deleteLater);
+//        connect(matlabthread, &QThread::finished, matlabthread, &QObject::deleteLater);
 
-        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()),Qt::DirectConnection);
-        connect(matlabthread, &QThread::finished, &(processthreadobj->timer), &QObject::deleteLater);
+//        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()),Qt::DirectConnection);
+//        connect(matlabthread, &QThread::finished, &(processthreadobj->timer), &QObject::deleteLater);
 
-        matlabthread->start();
-        processthreadobj->timer.start(1000);
-        //emit processthreadobj->tryamtlab(NULL);
+//        matlabthread->start();
+//        processthreadobj->timer.start(1000);
+//        //emit processthreadobj->tryamtlab(NULL);
 
         ui->listWidget_2->addItem("start reconstruct");
     }
@@ -683,7 +690,7 @@ void MainWindow::createectWidget()
     ectdocklayout->addWidget(electrode_numberlabel,0,0);
     ectdocklayout->addWidget(electrode_numberbox,0,1);
 
-    chosedifference=new QLabel("测量数据");
+    chosedifference=new QLabel("measurement data");
     chosedifferencebox=new QComboBox;
     list.clear();
     list<<"origin"<<"difference";
@@ -692,9 +699,9 @@ void MainWindow::createectWidget()
     ectdocklayout->addWidget(chosedifference,1,0);
     ectdocklayout->addWidget(chosedifferencebox,1,1);
 
-    voidbutton = new QPushButton(tr("空标定"),ectdockcontent);
+    voidbutton = new QPushButton(tr("void"),ectdockcontent);
     connect(voidbutton, SIGNAL(clicked()), this, SLOT(ectvoidCalibration()));
-    fullbutton = new QPushButton(tr("满标定"),ectdockcontent);
+    fullbutton = new QPushButton(tr("full"),ectdockcontent);
     connect(fullbutton, SIGNAL(clicked()), this, SLOT(ectfullCalibration()));
     ectdocklayout->addWidget(voidbutton,2,0);
     ectdocklayout->addWidget(fullbutton,2,1);
