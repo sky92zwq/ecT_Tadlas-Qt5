@@ -351,38 +351,40 @@ void MainWindow::startdataacquisition()//开始采集
 
 void MainWindow::reconstruct()
 {
-    if(1){//ect->alreadyVoidcalibtrated() && needstop ){
-        //if(!reconstructflag)reconstructflag=true;
-        //else return;
-	
+	if (mode::m_mode== mode::TDlas) {
+		/*if (!reconstructflag)reconstructflag = true;
+		else return;*/
 		tik_worker->moveToThread(openglThread);
 		tik_worker->Tikhonov();
 		tik_worker->land_worker.set_RGB();
 		showwid->openglwid->updateReconstructRGB(tik_worker->land_worker.R.data(),
 			tik_worker->land_worker.G.data(), tik_worker->land_worker.B.data());
+	}
+	if (mode::m_mode==mode::ECT&& /*ect->alreadyVoidcalibtrated() &&*/ needstop ){
+		/*if(!reconstructflag)reconstructflag=true;
+		else return;*/
 
-//        matlabthread=new QThread;
-//        matlabhelper=new MatlabHelper;
-//        matlabhelper->moveToThread(matlabthread);
-//        connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
-//        //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);
-//        connect(matlabhelper,&MatlabHelper::sigreconstructRGB,showwid->openglwid,&GLWidget::updateReconstructRGB,Qt::DirectConnection);
-//        matlabhelper->process1cirledata(NULL);//0709
+        matlabthread=new QThread;
+        matlabhelper=new MatlabHelper;
+        matlabhelper->moveToThread(matlabthread);
+        connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
+        //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);
+        connect(matlabhelper,&MatlabHelper::sigreconstructRGB,showwid->openglwid,&GLWidget::updateReconstructRGB,Qt::DirectConnection);
+        //matlabhelper->process1cirledata(NULL);//0709
 
-//        connect(matlabthread, &QThread::finished, matlabhelper, &QObject::deleteLater);
-//        connect(matlabthread, &QThread::finished, matlabthread, &QObject::deleteLater);
+        connect(matlabthread, &QThread::finished, matlabhelper, &QObject::deleteLater);
+        connect(matlabthread, &QThread::finished, matlabthread, &QObject::deleteLater);
 
-//        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()),Qt::DirectConnection);
-//        connect(matlabthread, &QThread::finished, &(processthreadobj->timer), &QObject::deleteLater);
+        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()),Qt::DirectConnection);
+        connect(matlabthread, &QThread::finished, &(processthreadobj->timer), &QObject::deleteLater);
 
-//        matlabthread->start();
-//        processthreadobj->timer.start(1000);
-//        //emit processthreadobj->tryamtlab(NULL);
+        matlabthread->start();
+        processthreadobj->timer.start(100);
+        //emit processthreadobj->tryamtlab(NULL);
 
         ui->listWidget_2->addItem("start reconstruct");
     }
-    else
-        ui->listWidget_2->addItem("start reconstruct failed!");
+ 
 
     ui->listWidget_2->scrollToBottom();
     emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)

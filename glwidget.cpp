@@ -212,22 +212,24 @@ void GLWidget::setvertexposition()//set vertex position
 {
 
 //    int flagcount=0;
-    GLfloat DELTA=0.02;
+    GLfloat DELTA=0.015;
 
     float vpos_x;
     float vpos_y;
+	float startpos_x = -0.3;
+	float startpos_y = -0.4;
     int step=12;
     int len=sizeof(Position)/sizeof(Position[0])/step;
     int squrelen=sqrt(len);
-        vpos_x=-0.2;
-        vpos_y=-0.2-DELTA;
+        vpos_x=startpos_x;
+        vpos_y=startpos_y-DELTA;
         for(int i=0;i<len;i++)
         {
             if (i%squrelen==0)
             {
                 int numr=i/squrelen;
-                vpos_x=-0.2;
-                vpos_y=-0.2+numr*DELTA;
+                vpos_x=startpos_x;
+                vpos_y=startpos_y+numr*DELTA;
             }
             Position[step*i] =vpos_x;
             Position[step*i+1] = vpos_y;
@@ -292,7 +294,7 @@ void GLWidget::initializeGL()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
 
     initializeOpenGLFunctions();
-    glClearColor(0,0,0.1, m_transparent ? 0 : 1);
+    glClearColor(1,1,1, m_transparent ? 0 : 1);
 
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, 1 ? vertexShader : vertexShaderSource);

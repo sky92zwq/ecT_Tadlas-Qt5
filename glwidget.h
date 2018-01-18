@@ -98,9 +98,9 @@ private:
     void setvertexposition();
 	void setvertexcolor();
 	void setvertexcolor(double * R, double * G, double * B);
-    GLfloat Position[20*20*6*2];
+    GLfloat Position[48*48*6*2];
 //    QVector<QVector2D> verpos;
-    GLfloat Color[20*20*6*3];
+    GLfloat Color[48*48*6*3];
 //    QVector<QVector3D> vercol;
 
     bool m_core;

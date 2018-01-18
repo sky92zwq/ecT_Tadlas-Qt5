@@ -90,7 +90,12 @@ public:
         ect=ECTClass::getInstance();
     }
     inline float calculatebuffer(unsigned char *buffer, int i){
-        return (buffer[i]*256+buffer[i+1])*64/1*M_PI/2/400*2/8192*1000;
+		unsigned short s = buffer[i];
+		s=s << 8;
+		s += buffer[i+1];
+		short t = s;
+		return t;
+
     }
 
 

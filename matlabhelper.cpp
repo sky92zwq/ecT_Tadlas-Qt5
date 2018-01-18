@@ -106,16 +106,18 @@ double MatlabHelper::maxf(double *f, int len)
 void MatlabHelper::process1cirledata(float *onearg)
 {
     
-
-//    for(int i=0;i<ect->measurenumber();i++)z[i] = onearg[i]-ect->datavoid.data()[i];
-////	//matlab .lib
-//    time.start();
-////    calderon_circle_16_electrodes_ssjwq(z,4,R_temp,G_temp,B_temp);
-//    calderon_circle_16_electrodes_ssj(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
-////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
-//    qDebug()<<time.elapsed()/1000.0;
-//    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
-        time.start(); 
+	if (mode::m_mode == mode::ECT) {
+		for (int i = 0; i<ect->measurenumber(); i++)z[i] = onearg[i] /*- ect->datavoid.data()[i]*/;
+		////	//matlab .lib
+		//    time.start();
+		    calderon_circle_16_electrodes_ssjwq(z,4,R_temp,G_temp,B_temp);
+		//calderon_circle_16_electrodes_ssj(z, 4, R_temp, R_size, G_temp, G_size, B_temp, B_size);
+		////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
+		//    qDebug()<<time.elapsed()/1000.0;
+		//    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
+	}
+   
+        /*time.start(); 
     Tikhonov(tdlas_L,tdlas_b,tdlas_k,tdlas_x0,tdlas_f);
         qDebug()<<time.elapsed()/1000.0;
         qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
@@ -124,6 +126,6 @@ void MatlabHelper::process1cirledata(float *onearg)
         {
             graytoRGB(tdlas_R_temp+i,tdlas_G_temp+i,tdlas_B_temp+i,tdlas_f+i,max);
         }
-    rwobj.writetxt(tdlas_f,tdlas_fsize,"./f0710.txt");
-    emit sigreconstructRGB(tdlas_R_temp,tdlas_G_temp,tdlas_B_temp);
+    rwobj.writetxt(tdlas_f,tdlas_fsize,"./f0710.txt");*/
+    emit sigreconstructRGB(R_temp,G_temp,B_temp);
 }
