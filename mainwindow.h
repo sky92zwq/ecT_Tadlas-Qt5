@@ -29,6 +29,8 @@
 #include "matlabhelper.h"
 #include <QListWidgetItem>
 #include "tikhonov_alg.h"
+#include "EctSys.h"
+#include "TdlasSys.h"
 
 
 namespace Ui {
@@ -52,6 +54,9 @@ public:
 
 	ECTClass *ect;
 
+	MeasureSys *	measuresys;
+	EctSys	   *	EctSysObj;
+	TdlasSys   *	TdlasSysObj;
 
 
 	protected slots:

@@ -56,6 +56,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
+#define  maxN 48
 
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
@@ -90,18 +91,19 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
 public slots:
-;
+
 	void updateReconstructRGB(double *, double*, double*);
+	void updateReconstructN(int n);
 
 private:
     void setupVertexAttribs();
     void setvertexposition();
 	void setvertexcolor();
 	void setvertexcolor(double * R, double * G, double * B);
-    GLfloat Position[48*48*6*2];
-//    QVector<QVector2D> verpos;
-    GLfloat Color[48*48*6*3];
-//    QVector<QVector3D> vercol;
+    GLfloat Position[maxN*maxN *6*2];
+    GLfloat Color[maxN*maxN *6*3];
+
+	int N;
 
     bool m_core;
     int m_xRot;

@@ -59,7 +59,8 @@ GLWidget::GLWidget(QWidget *parent)
       m_xRot(0),
       m_yRot(0),
       m_zRot(0),
-      m_program(0)
+      m_program(0),
+	  N(maxN)
 {
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     // --transparent causes the clear color to be transparent. Therefore, on systems that
@@ -212,46 +213,46 @@ void GLWidget::setvertexposition()//set vertex position
 {
 
 //    int flagcount=0;
-    GLfloat DELTA=0.015;
+    GLfloat DELTA=0.72/N;
 
     float vpos_x;
     float vpos_y;
 	float startpos_x = -0.3;
 	float startpos_y = -0.4;
     int step=12;
-    int len=sizeof(Position)/sizeof(Position[0])/step;
+    int len=N*N;
     int squrelen=sqrt(len);
-        vpos_x=startpos_x;
-        vpos_y=startpos_y-DELTA;
-        for(int i=0;i<len;i++)
-        {
-            if (i%squrelen==0)
-            {
-                int numr=i/squrelen;
-                vpos_x=startpos_x;
-                vpos_y=startpos_y+numr*DELTA;
-            }
-            Position[step*i] =vpos_x;
-            Position[step*i+1] = vpos_y;
+	vpos_x = startpos_x;
+	vpos_y = startpos_y - DELTA;
+	for (int i = 0; i < len; i++)
+	{
+		if (i%squrelen == 0)
+		{
+			int numr = i / squrelen;
+			vpos_x = startpos_x;
+			vpos_y = startpos_y + numr*DELTA;
+		}
+		Position[step*i] = vpos_x;
+		Position[step*i + 1] = vpos_y;
 
-            Position[step*i+2] = Position[step*i];
-            Position[step*i+3] = Position[step*i+1]+DELTA;
+		Position[step*i + 2] = Position[step*i];
+		Position[step*i + 3] = Position[step*i + 1] + DELTA;
 
-            Position[step*i+4] = Position[step*i+2]+DELTA;
-            Position[step*i+5] = Position[step*i+3];
+		Position[step*i + 4] = Position[step*i + 2] + DELTA;
+		Position[step*i + 5] = Position[step*i + 3];
 
-            Position[step*i+6] = Position[step*i+4];
-            Position[step*i+7] = Position[step*i+5];
+		Position[step*i + 6] = Position[step*i + 4];
+		Position[step*i + 7] = Position[step*i + 5];
 
-            Position[step*i+8] = Position[step*i+6];
-            Position[step*i+9] = Position[step*i+7]-DELTA;
+		Position[step*i + 8] = Position[step*i + 6];
+		Position[step*i + 9] = Position[step*i + 7] - DELTA;
 
-            Position[step*i+10] = Position[step*i+8]-DELTA;
-            Position[step*i+11] = Position[step*i+9];
+		Position[step*i + 10] = Position[step*i + 8] - DELTA;
+		Position[step*i + 11] = Position[step*i + 9];
 
-            vpos_x=Position[step*i+8];
-            vpos_y=Position[step*i+9];
-        }
+		vpos_x = Position[step*i + 8];
+		vpos_y = Position[step*i + 9];
+	}
 
 }
 
@@ -270,7 +271,7 @@ void GLWidget::setvertexcolor()
 void GLWidget::setvertexcolor(double *R, double *G, double *B)
 {
     int step=18;
-    int len=sizeof(Color)/sizeof(Color[0])/step;
+    int len=N*N;
     for (int i = 0; i<len; i++)
 	{
         for(int j=0;j<6;j++){
@@ -344,6 +345,17 @@ void GLWidget::updateReconstructRGB(double *R, double *G, double *B)
 	update();
 }
 
+void GLWidget::updateReconstructN(int n)
+{
+	N = n;	
+	setvertexposition();
+	
+	m_logoVbo.bind();
+	m_logoVbo.write(0, Position, N*N * 12*sizeof(Position[0]));
+	m_logoVbo.release();
+
+}
+
 void GLWidget::setupVertexAttribs()
 {
     m_logoVbo.bind();
@@ -368,7 +380,7 @@ void GLWidget::paintGL()
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_logoVbo.bind();
-    m_logoVbo.write(sizeof(Position), Color, sizeof(Color));
+    m_logoVbo.write(sizeof(Position), Color, N*N * 18 * sizeof(Color[0]));
 
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_proj);
@@ -376,7 +388,7 @@ void GLWidget::paintGL()
 //    QMatrix3x3 normalMatrix = m_world.normalMatrix();
 //    m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
-    glDrawArrays(GL_TRIANGLES, 0, sizeof(Position)/sizeof(Position[0])/2);
+    glDrawArrays(GL_TRIANGLES, 0, N*N*6);
 
     m_logoVbo.release();
     m_program->release();

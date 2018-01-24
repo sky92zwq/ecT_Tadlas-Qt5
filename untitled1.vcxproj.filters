@@ -158,6 +158,21 @@
     <ClCompile Include="Release\moc_base_alg.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="MeasureSys.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EctSys.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TdlasSys.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_MeasureSys.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_MeasureSys.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ectclass.h">
@@ -214,6 +229,9 @@
     <ClInclude Include="tikhonov_alg.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="TdlasSys.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.ui">
@@ -223,6 +241,12 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="base_alg.h">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EctSys.h">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MeasureSys.h">
       <Filter>Generated Files</Filter>
     </CustomBuild>
   </ItemGroup>

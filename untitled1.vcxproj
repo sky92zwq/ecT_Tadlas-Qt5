@@ -152,6 +152,9 @@
     <ClCompile Include="Debug\moc_matlabhelper.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Debug\moc_MeasureSys.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Debug\moc_mypaintusb.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -165,6 +168,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ectclass.cpp" />
+    <ClCompile Include="EctSys.cpp" />
     <ClCompile Include="GeneratedFiles\qrc_rsc.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -176,6 +180,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="matlabhelper.cpp" />
+    <ClCompile Include="MeasureSys.cpp" />
     <ClCompile Include="mode.cpp" />
     <ClCompile Include="mypaintusb.cpp" />
     <ClCompile Include="myshowwidget.cpp" />
@@ -192,6 +197,9 @@
     <ClCompile Include="Release\moc_matlabhelper.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Release\moc_MeasureSys.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Release\moc_mypaintusb.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -206,6 +214,7 @@
     </ClCompile>
     <ClCompile Include="tdlasclass.cpp" />
     <ClCompile Include="tdlasdialog.cpp" />
+    <ClCompile Include="TdlasSys.cpp" />
     <ClCompile Include="tikhonov_alg.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -219,11 +228,36 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DNDEBUG "-I." "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtWidgets" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtGui" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtANGLE" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtCore" "-I.\release" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\mkspecs\win32-msvc2015" "-I.\GeneratedFiles"</Command>
     </CustomBuild>
+    <CustomBuild Include="EctSys.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+    </CustomBuild>
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="GeneratedFiles\ui_tdlasdialog.h" />
     <ClInclude Include="landweber_alg.h" />
     <ClInclude Include="ectclass.h" />
     <ClInclude Include="ftd2xx.h" />
+    <CustomBuild Include="MeasureSys.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing MeasureSys.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB "-I." "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtWidgets" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtGui" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtANGLE" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtCore" "-I.\debug" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\mkspecs\win32-msvc2015" "-I.\GeneratedFiles"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing MeasureSys.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DNDEBUG "-I." "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtWidgets" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtGui" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtANGLE" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtCore" "-I.\release" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\mkspecs\win32-msvc2015" "-I.\GeneratedFiles"</Command>
+    </CustomBuild>
+    <ClInclude Include="TdlasSys.h" />
     <ClInclude Include="tikhonov_alg.h" />
     <CustomBuild Include="glwidget.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DNDEBUG  "-I." "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtWidgets" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtGui" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtANGLE" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\include\QtCore" "-I.\release" "-I.\..\..\..\..\Qtvs32\Qt5.7.0\5.7\msvc2015\mkspecs\win32-msvc2015" "-I.\GeneratedFiles"</Command>

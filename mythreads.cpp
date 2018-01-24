@@ -135,6 +135,5 @@ void processThreadobj::tomatlabhelper()
     //if(onecirclearg.tran.count()==ect->measurenumber())
     {
         emit sigECTonecircledata(storeonecircle);
-        qDebug()<<"emit";
     }
 }

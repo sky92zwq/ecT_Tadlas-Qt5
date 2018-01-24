@@ -29,6 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
     showwid=new showwidget;
     setCentralWidget(showwid);
 
+	EctSysObj = new EctSys(&usb,4096,48);
+	TdlasSysObj = new TdlasSys(&usb, 4096, 20);
+	measuresys = EctSysObj;
     if(mode::m_mode==mode::ECT)
         Ect();
     if (mode::m_mode ==mode::TDlas)
@@ -97,7 +100,7 @@ void MainWindow::openusb()//closeusb action
     ui->listWidget_2->addItem(num);
 
     QString label("dev");
-    int i=0;
+    DWORD i=0;
     if(!usb.isopened()){
         for(;i<numdev;i++){
             if(QString(usb.devInfo[i].Description)==QString("USB 2.0 <-> ECT Core Board A")){
@@ -138,6 +141,7 @@ void MainWindow::closeusb()//closeusb action
 
 void MainWindow::tdlas()
 {
+	measuresys = TdlasSysObj;
     mode::m_mode=mode::TDlas;
     ectdock->setVisible(false);
 
@@ -155,6 +159,7 @@ void MainWindow::tdlas()
 
 void MainWindow::Ect()
 {
+	measuresys = EctSysObj;
     mode::m_mode=mode::ECT;
     if(!ectdock->isVisible())ectdock->setVisible(true);
 
@@ -229,20 +234,14 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
         txtfile->flush();
         txtfile->close();
 
-        QByteArray TxBuffer;//准备写入usb的停止发送命令
-        TxBuffer.clear();
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        DWORD BytesReceived;//向下写入发送命令
-        if(mode::m_mode==mode::TDlas){
-            ;
-        }
-        if(mode::m_mode==mode::ECT){
-            in<<(quint8)0x77;
-            qDebug()<<TxBuffer.data();
-            if(usb.Write(TxBuffer.data(),1,&BytesReceived)==FT_OK&&BytesReceived==1)
-                ui->listWidget_2->addItem("停止发送命令写入成功");
-            qDebug()<<BytesReceived;
-        }
+		DWORD BytesReceived;
+		measuresys->stop_acq_command();
+		if (usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(), &BytesReceived) == FT_OK
+			&& BytesReceived == measuresys->TxBuffer.size())
+		{
+			ui->listWidget_2->addItem(QString("stop command ") + measuresys->name);
+		}
+
     }
 
     startdataacquisition_action->setEnabled(true);
@@ -262,14 +261,12 @@ void MainWindow::startdataacquisition()//开始采集
         QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
         QString dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
         QDir::setCurrent(savedirectory);
-        if(mode::m_mode==mode::ECT)datafile=new QFile("ECT_"+dt+"_acquisition.bin");//准备文件
-        if(mode::m_mode==mode::TDlas)datafile=new QFile("TDlas_"+dt+"_acquisition.bin");//准备文件
+        datafile=new QFile(measuresys->name+dt+"_acquisition.bin");//准备文件
         //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-         datetime=QDateTime::currentDateTime();//准备文件txt
-         dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
+         //datetime=QDateTime::currentDateTime();//准备文件txt
+         //dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
         QDir::setCurrent(savedirectory);
-        if(mode::m_mode==mode::ECT)txtfile=new QFile("ECT_"+dt+"_acquisition.txt");
-        if(mode::m_mode==mode::TDlas)txtfile=new QFile("TDlas_"+dt+"_acquisition.txt");
+		txtfile=new QFile(measuresys->name+dt+"_acquisition.txt");
         txtfile->open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);//准备文件
 
 
@@ -304,35 +301,27 @@ void MainWindow::startdataacquisition()//开始采集
         connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
         connect(processthreadobj,&processThreadobj::sigdrawECTdifference,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
         connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
+		connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()), Qt::DirectConnection);//sigECTonecircledata
+		connect(processthreadobj, &processThreadobj::sigECTonecircledata, measuresys, &MeasureSys::sigOneFrame);
         connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
         connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
 
+		DWORD BytesReceived;
+		measuresys->start_acq_command();
+		if(usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(),
+			&BytesReceived)==FT_OK && BytesReceived==measuresys->TxBuffer.size())
+			ui->listWidget_2->addItem(QString("start command ")+measuresys->name);
+		usb.SetTimeouts(5000, 1000);
 
-
-        QByteArray TxBuffer;//准备工作：写入usb的发送命令
-        TxBuffer.clear();
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        DWORD BytesReceived;//end准备
-
-        if(mode::m_mode==mode::TDlas){
-            in<<(quint16)0x8800<<(quint16)4096;
-            if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
-                ui->listWidget_2->addItem("发送命令写入成功TDLAS");
-            qDebug()<<BytesReceived;
-            UCHAR MASK = 0xff;
-            UCHAR MODE = 0x40;
-            usb.SetBitMode(MASK, MODE);
-            usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
-
-        }
-        if(mode::m_mode==mode::ECT){
-            in<<(quint8)0x88;
-            qDebug()<<TxBuffer.data();
-            if(usb.Write(TxBuffer.data(),1,&BytesReceived)==FT_OK&&BytesReceived==1)
-                ui->listWidget_2->addItem("发送命令写入成功ECT");
-            qDebug()<<BytesReceived;
-            usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
-        }
+        //if(mode::m_mode==mode::TDlas){
+        //    in<<(quint16)0x8800<<(quint16)4096;
+        //    if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
+        //        ui->listWidget_2->addItem("start TDLAS commond");
+        //    qDebug()<<BytesReceived;
+        //    UCHAR MASK = 0xff;
+        //    UCHAR MODE = 0x40;
+        //    usb.SetBitMode(MASK, MODE);
+        //    usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
 
 
         rwthread1->start();//开始线程吧
@@ -351,40 +340,16 @@ void MainWindow::startdataacquisition()//开始采集
 
 void MainWindow::reconstruct()
 {
-	if (mode::m_mode== mode::TDlas) {
-		/*if (!reconstructflag)reconstructflag = true;
-		else return;*/
-		tik_worker->moveToThread(openglThread);
-		tik_worker->Tikhonov();
-		tik_worker->land_worker.set_RGB();
-		showwid->openglwid->updateReconstructRGB(tik_worker->land_worker.R.data(),
-			tik_worker->land_worker.G.data(), tik_worker->land_worker.B.data());
+	if (!reconstructflag && needstop)
+	{
+		connect(measuresys, &MeasureSys::reconstructN, showwid->openglwid, &GLWidget::updateReconstructN);
+		connect(measuresys, &MeasureSys::reconstructedRGB, showwid->openglwid, &GLWidget::updateReconstructRGB);
+		measuresys->beforeconstruct(measuresys->N);
+		measuresys->beforeconstruct();
+		measuresys->reconstruct();
+		processthreadobj->timer.start(10);
+
 	}
-	if (mode::m_mode==mode::ECT&& /*ect->alreadyVoidcalibtrated() &&*/ needstop ){
-		/*if(!reconstructflag)reconstructflag=true;
-		else return;*/
-
-        matlabthread=new QThread;
-        matlabhelper=new MatlabHelper;
-        matlabhelper->moveToThread(matlabthread);
-        connect(processthreadobj, &processThreadobj::sigECTonecircledata,matlabhelper,&MatlabHelper::process1cirledata);
-        //connect(processthreadobj, &processThreadobj::tryamtlab,matlabhelper,&MatlabHelper::process1cirledata,Qt::DirectConnection);
-        connect(matlabhelper,&MatlabHelper::sigreconstructRGB,showwid->openglwid,&GLWidget::updateReconstructRGB,Qt::DirectConnection);
-        //matlabhelper->process1cirledata(NULL);//0709
-
-        connect(matlabthread, &QThread::finished, matlabhelper, &QObject::deleteLater);
-        connect(matlabthread, &QThread::finished, matlabthread, &QObject::deleteLater);
-
-        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()),Qt::DirectConnection);
-        connect(matlabthread, &QThread::finished, &(processthreadobj->timer), &QObject::deleteLater);
-
-        matlabthread->start();
-        processthreadobj->timer.start(100);
-        //emit processthreadobj->tryamtlab(NULL);
-
-        ui->listWidget_2->addItem("start reconstruct");
-    }
- 
 
     ui->listWidget_2->scrollToBottom();
     emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
