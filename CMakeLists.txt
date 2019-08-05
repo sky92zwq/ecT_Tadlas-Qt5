@@ -16,5 +16,13 @@ set(SOURCES
     tdlasclass.cpp 
 )
 
+set(MOC_SRCS 
+    mainwindow.h    
+)
+
+qt_wrap_cpp(MOCS ${MOC_SRCS})
+
+
 include_directory(.)
 add_executable(qtECT_TDLAS ${SOURCES} )
+target_link_libraries(qtECT_TDLAS ftd2xx)
