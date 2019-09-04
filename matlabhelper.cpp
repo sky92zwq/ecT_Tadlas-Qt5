@@ -28,17 +28,6 @@ MatlabHelper::~MatlabHelper()
 
 }
 
-
-
-void MatlabHelper::adddynamiclinklib()
-{
-    calderon16lib.setFileName("calderon_circle_16_electrodes_ssj.dll");
-    if(!calderon16lib.load())qDebug()<<"matlab load fail";
-    usecalderon16=(MatlabHelper::calderon16)calderon16lib.resolve("calderon_circle_16_electrodes_ssj");
-    if(usecalderon16==NULL)qDebug()<<"calderon 16 link failed";
-
-}
-
 void MatlabHelper::graytoRGB(double *R, double *G, double *B, double *f,double maxf)
 {
         //red
@@ -105,19 +94,21 @@ double MatlabHelper::maxf(double *f, int len)
 
 void MatlabHelper::process1cirledata(float *onearg)
 {
-    
-	if (mode::m_mode == mode::ECT) {
-		for (int i = 0; i<ect->measurenumber(); i++)z[i] = onearg[i] /*- ect->datavoid.data()[i]*/;
-		////	//matlab .lib
-		//    time.start();
-		    calderon_circle_16_electrodes_ssjwq(z,4,R_temp,G_temp,B_temp);
-		//calderon_circle_16_electrodes_ssj(z, 4, R_temp, R_size, G_temp, G_size, B_temp, B_size);
-		////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
-		//    qDebug()<<time.elapsed()/1000.0;
-		//    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
-	}
-   
-        /*time.start(); 
+
+    if (mode::m_mode == mode::ECT)
+    {
+        for (int i = 0; i < ect->measurenumber(); i++)
+            z[i] = onearg[i] /*- ect->datavoid.data()[i]*/;
+        ////	//matlab .lib
+        //    time.start();
+        calderon_circle_16_electrodes_ssjwq(z, 4, R_temp, G_temp, B_temp);
+        //calderon_circle_16_electrodes_ssj(z, 4, R_temp, R_size, G_temp, G_size, B_temp, B_size);
+        ////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
+        //    qDebug()<<time.elapsed()/1000.0;
+        //    qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];
+    }
+
+    /*time.start(); 
     Tikhonov(tdlas_L,tdlas_b,tdlas_k,tdlas_x0,tdlas_f);
         qDebug()<<time.elapsed()/1000.0;
         qDebug()<<R_temp[0]<<G_temp[0]<<B_temp[0];

@@ -19,52 +19,48 @@
 #include "rwhelper.h"
 class MatlabHelper : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-    MatlabHelper(QObject *parent=NULL);
-	~MatlabHelper();
+    MatlabHelper(QObject *parent = NULL);
+    ~MatlabHelper();
 
-    void adddynamiclinklib();//if use dll
-    void graytoRGB(double *R, double*G, double*B, double* f, double maxf);
-    double maxf(double*f,int len);
+    void graytoRGB(double *R, double *G, double *B, double *f, double maxf);
+    double maxf(double *f, int len);
     RWhelper<double> rwobj;
 
 private:
     TDLASclass tdlasobj;
-    double tdlas_L[60*400]={0};
-    double tdlas_b[60]={0};
-    int tdlas_k=1000;
-    double tdlas_x0[400]={0};
-    double tdlas_f[400]={0};
-    int tdlas_fsize[2]={400,1};
+    double tdlas_L[60 * 400] = {0};
+    double tdlas_b[60] = {0};
+    int tdlas_k = 1000;
+    double tdlas_x0[400] = {0};
+    double tdlas_f[400] = {0};
+    int tdlas_fsize[2] = {400, 1};
     double tdlas_R_temp[400];
     double tdlas_G_temp[400];
     double tdlas_B_temp[400];
+
 private:
     ECTClass *ect;
     float voidsum;
     float fullsum;
     double *z;
-    double senmatrix_16[1716*120];
-    double R_temp[48*48];
-    double G_temp[48*48];
-    double B_temp[48*48];
+    double senmatrix_16[1716 * 120];
+    double R_temp[48 * 48];
+    double G_temp[48 * 48];
+    double B_temp[48 * 48];
     double m_hold_up[1];
-    int    R_size[1],G_size[1],B_size[1];
+    int R_size[1], G_size[1], B_size[1];
+
 private:
     QTime time;
     QVector<float> fromthread;
-private:
-    QLibrary calderon16lib;
-    typedef void (*calderon16)(const real_T *, real_T , real_T R_data[2304], int32_T R_size[1], real_T G_data[2304], int32_T G_size[1], real_T B_data[2304], int32_T B_size[1]);
-    calderon16 usecalderon16;
-
 
 public slots:
     void process1cirledata(float *onearg);
 signals:
-    void sigreconstructRGB(double *,double*,double*);
+    void sigreconstructRGB(double *, double *, double *);
 };
 
 #endif // MATLABHELPER_H
