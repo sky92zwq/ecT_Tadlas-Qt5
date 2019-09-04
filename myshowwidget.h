@@ -19,7 +19,7 @@ public:
 
 public:
     QVBoxLayout *mainshowlayout;
-	QGridLayout *mainlayout;
+    QGridLayout *mainlayout;
 
     QFrame *ECTpaintframe;
     QFrame *ECTpaintframe_2;

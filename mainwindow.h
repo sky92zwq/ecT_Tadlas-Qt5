@@ -180,10 +180,6 @@ public:
 	MatlabHelper *matlabhelper;
 
 	QByteArray RWbyte;
-private:
-	QThread* openglThread ;
-	Tikhonov_Alg *tik_worker ;
-
 
 private:
 	bool needstop;

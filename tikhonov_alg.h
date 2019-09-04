@@ -27,7 +27,7 @@ private:
     bool already_init_filtter;
 
 public:
-    landweber_Alg land_worker;
+    landweber_Alg land_worker;//TO DO
     void set_K();
     void set_x();
 

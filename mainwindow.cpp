@@ -11,34 +11,31 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-    ect=ECTClass::getInstance();
+    ect = ECTClass::getInstance();
     ect->setelectrode_number(16);
 
     createaction();
-    createmenus();  //菜单栏
-    createToolBars();//工具栏
-    createdockwidget();//停靠部件
+    createmenus();      //菜单栏
+    createToolBars();   //工具栏
+    createdockwidget(); //停靠部件
 
+    datafile = NULL;
+    rwthread1 = NULL;
+    rwthread2 = NULL;
+    savedirectory = "./";
 
-    datafile=NULL;
-    rwthread1=NULL;
-    rwthread2=NULL;
-    savedirectory="./";
-
-    showwid=new showwidget;
+    showwid = new showwidget;
     setCentralWidget(showwid);
 
-	EctSysObj = new EctSys(&usb,4096,48);
-	TdlasSysObj = new TdlasSys(&usb, 4096, 20);
-	measuresys = EctSysObj;
-    if(mode::m_mode==mode::ECT)
+    EctSysObj = new EctSys(&usb, 4096, 48);
+    TdlasSysObj = new TdlasSys(&usb, 4096, 20);
+    measuresys = EctSysObj;
+    if (mode::m_mode == mode::ECT)
         Ect();
-    if (mode::m_mode ==mode::TDlas)
+    if (mode::m_mode == mode::TDlas)
         tdlas();
-//    stopdataacquisition_action->setEnabled(false);
-	openglThread = new QThread;
-	tik_worker = new Tikhonov_Alg("laplacian");
+    //    stopdataacquisition_action->setEnabled(false);
+
 }
 
 MainWindow::~MainWindow()
@@ -78,6 +75,156 @@ MainWindow::~MainWindow()
 
 
 }
+
+///
+/// \brief MainWindow::creating...............
+///
+void MainWindow::createToolBars()
+{
+    toolmode=addToolBar("mode");
+    toolmode->addAction(ECT_action);
+    toolmode->addAction(tdlas_action);
+
+    toolusb=addToolBar("usb");
+    toolusb->addAction(openusb_action);
+    toolusb->addAction(closeusb_action);
+
+
+    tooldataacquisition=addToolBar("data_acquisition");
+    tooldataacquisition->addAction(dataacquisition_action);
+    tooldataacquisition->addAction(startdataacquisition_action);
+    tooldataacquisition->addAction(stopdataacquisition_action);
+
+    toolreconstruction=addToolBar("reconstruction");
+    toolreconstruction->addAction(reconstruct_action);
+    //insert here
+
+}
+
+void MainWindow::createaction()
+{
+    openusb_action= new QAction(QIcon(":/new/prefix1/images/usb1.png"),"openusb",this);
+    connect(openusb_action,SIGNAL(triggered()),this,SLOT(openusb()));
+
+    closeusb_action=new QAction(QIcon(":/new/prefix1/images/lan-break.png"),"closeusb",this);
+    connect(closeusb_action,SIGNAL(triggered()),this,SLOT(closeusb()));
+
+    tdlas_action=new QAction("tdlas",this);
+    connect(tdlas_action,SIGNAL(triggered()),this,SLOT(tdlas()));
+    tdlas_action->setCheckable(true);
+
+    ECT_action= new QAction("ECT",this);
+    connect(ECT_action,SIGNAL(triggered()),this,SLOT(Ect()));
+    ECT_action->setCheckable(true);
+
+    dataacquisition_action=new QAction(QIcon(":/new/prefix1/images/directory.png"),"Dir of data acquisition",this);
+    connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
+
+    stopdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/stop.png"),"stop",this);
+    connect(stopdataacquisition_action,SIGNAL(triggered()),this,SLOT(stopdataacquisition()));
+
+    startdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/start.png"),"start",this);
+    connect(startdataacquisition_action,SIGNAL(triggered()),this,SLOT(startdataacquisition()));
+
+    reconstruct_action=new QAction("reconstruct",this);
+    connect(reconstruct_action,SIGNAL(triggered()),SLOT(reconstruct()));
+
+    LBP=new QAction("LBP",this);
+
+    caldelong=new QAction("caldelong",this);
+}
+
+void MainWindow::createmenus()//insert codes
+{
+    ui->menu->addAction(tdlas_action);
+    ui->menu->addAction(ECT_action);
+    ui->menu->addAction(openusb_action);
+
+    menualgorithm=new QMenu("algorithm");
+    ui->menureconstruct->addMenu(menualgorithm);
+    ui->menureconstruct->addAction(reconstruct_action);
+    menualgorithm->addAction(LBP);
+    menualgorithm->addAction(caldelong);
+}
+
+void MainWindow::createdockwidget()
+{
+   if(mode::m_mode==mode::ECT)
+       createectWidget();
+
+    statusdock=new QDockWidget(tr("status"),this);
+    statuscontent=new mystatuscontent;
+    statuslayout=new QGridLayout(statuscontent);
+    connect(ui->listWidget_2,SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+            this,SLOT(changelistitemcolor(QListWidgetItem*,QListWidgetItem*)));
+    ui->listWidget_2->setAutoScroll(true);
+    statuscontent->setPalette(QPalette(QColor(199,237,204)));
+    statuscontent->setAutoFillBackground(true);
+    statuslayout->addWidget(ui->listWidget_2);
+
+    statusdock->setWidget(statuscontent);
+
+    addDockWidget(Qt::BottomDockWidgetArea,statusdock);
+
+}
+
+void MainWindow::createtdlasview()
+{
+
+}
+
+void MainWindow::createtdlasWidget()
+{
+
+}
+
+void MainWindow::createectview()
+{
+    if(!showwid->paintusbect->isVisible()){
+        showwid->paintusbect->setVisible(true);
+     }
+
+}
+
+void MainWindow::createectWidget()
+{
+    ectdock=new QDockWidget(tr("ECT"),this);
+    ectdockcontent=new QWidget;
+    ectdockcontent->setPalette(QPalette(Qt::white));
+    ectdockcontent->setAutoFillBackground(true);
+    ectdocklayout=new QGridLayout(ectdockcontent);
+    ectdocklayout->setContentsMargins(0,0,0,0);
+    electrode_numberbox=new QComboBox;
+    QStringList list;
+    list<<"16"<<"12"<<"8";
+    electrode_numberbox->addItems(list);
+    connect(electrode_numberbox,SIGNAL(activated(QString)),this,SLOT(setelectrodenum(QString)));
+    electrode_numberlabel=new QLabel("electrode_number");
+    ectdocklayout->addWidget(electrode_numberlabel,0,0);
+    ectdocklayout->addWidget(electrode_numberbox,0,1);
+
+    chosedifference=new QLabel("measurement data");
+    chosedifferencebox=new QComboBox;
+    list.clear();
+    list<<"origin"<<"difference";
+    chosedifferencebox->addItems(list);
+    connect(chosedifferencebox,SIGNAL(activated(QString)),this,SLOT(setectdifference(QString)));
+    ectdocklayout->addWidget(chosedifference,1,0);
+    ectdocklayout->addWidget(chosedifferencebox,1,1);
+
+    voidbutton = new QPushButton(tr("void"),ectdockcontent);
+    connect(voidbutton, SIGNAL(clicked()), this, SLOT(ectvoidCalibration()));
+    fullbutton = new QPushButton(tr("full"),ectdockcontent);
+    connect(fullbutton, SIGNAL(clicked()), this, SLOT(ectfullCalibration()));
+    ectdocklayout->addWidget(voidbutton,2,0);
+    ectdocklayout->addWidget(fullbutton,2,1);
+
+
+    ectdock->setWidget(ectdockcontent);
+    ectdock->layout()->setSizeConstraint(QLayout::SetDefaultConstraint);
+    addDockWidget(Qt::RightDockWidgetArea,ectdock);
+}
+
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
@@ -141,7 +288,7 @@ void MainWindow::closeusb()//closeusb action
 
 void MainWindow::tdlas()
 {
-	measuresys = TdlasSysObj;
+    measuresys = TdlasSysObj;
     mode::m_mode=mode::TDlas;
     ectdock->setVisible(false);
 
@@ -159,7 +306,7 @@ void MainWindow::tdlas()
 
 void MainWindow::Ect()
 {
-	measuresys = EctSysObj;
+    measuresys = EctSysObj;
     mode::m_mode=mode::ECT;
     if(!ectdock->isVisible())ectdock->setVisible(true);
 
@@ -234,14 +381,12 @@ void MainWindow::stopdataacquisition()//停止数据采集 action
         txtfile->flush();
         txtfile->close();
 
-		DWORD BytesReceived;
-		measuresys->stop_acq_command();
-		if (usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(), &BytesReceived) == FT_OK
-			&& BytesReceived == measuresys->TxBuffer.size())
-		{
-			ui->listWidget_2->addItem(QString("stop command ") + measuresys->name);
-		}
-
+        DWORD BytesReceived;
+        measuresys->stop_acq_command();
+        if (usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(), &BytesReceived) == FT_OK && BytesReceived == measuresys->TxBuffer.size())
+        {
+            ui->listWidget_2->addItem(QString("stop command ") + measuresys->name);
+        }
     }
 
     startdataacquisition_action->setEnabled(true);
@@ -266,7 +411,7 @@ void MainWindow::startdataacquisition()//开始采集
          //datetime=QDateTime::currentDateTime();//准备文件txt
          //dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
         QDir::setCurrent(savedirectory);
-		txtfile=new QFile(measuresys->name+dt+"_acquisition.txt");
+        txtfile=new QFile(measuresys->name+dt+"_acquisition.txt");
         txtfile->open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);//准备文件
 
 
@@ -301,17 +446,17 @@ void MainWindow::startdataacquisition()//开始采集
         connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
         connect(processthreadobj,&processThreadobj::sigdrawECTdifference,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
         connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
-		connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()), Qt::DirectConnection);//sigECTonecircledata
-		connect(processthreadobj, &processThreadobj::sigECTonecircledata, measuresys, &MeasureSys::sigOneFrame);
+        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()), Qt::DirectConnection);//sigECTonecircledata
+        connect(processthreadobj, &processThreadobj::sigECTonecircledata, measuresys, &MeasureSys::sigOneFrame);
         connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
         connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
 
-		DWORD BytesReceived;
-		measuresys->start_acq_command();
-		if(usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(),
-			&BytesReceived)==FT_OK && BytesReceived==measuresys->TxBuffer.size())
-			ui->listWidget_2->addItem(QString("start command ")+measuresys->name);
-		usb.SetTimeouts(5000, 1000);
+        DWORD BytesReceived;
+        measuresys->start_acq_command();
+        if(usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(),
+            &BytesReceived)==FT_OK && BytesReceived==measuresys->TxBuffer.size())
+            ui->listWidget_2->addItem(QString("start command ")+measuresys->name);
+        usb.SetTimeouts(5000, 1000);
 
         //if(mode::m_mode==mode::TDlas){
         //    in<<(quint16)0x8800<<(quint16)4096;
@@ -340,16 +485,16 @@ void MainWindow::startdataacquisition()//开始采集
 
 void MainWindow::reconstruct()
 {
-	if (!reconstructflag && needstop)
-	{
-		connect(measuresys, &MeasureSys::reconstructN, showwid->openglwid, &GLWidget::updateReconstructN);
-		connect(measuresys, &MeasureSys::reconstructedRGB, showwid->openglwid, &GLWidget::updateReconstructRGB);
-		measuresys->beforeconstruct(measuresys->N);
-		measuresys->beforeconstruct();
-		measuresys->reconstruct();
-		processthreadobj->timer.start(10);
+    if (!reconstructflag && needstop)
+    {
+        connect(measuresys, &MeasureSys::reconstructN, showwid->openglwid, &GLWidget::updateReconstructN);
+        connect(measuresys, &MeasureSys::reconstructedRGB, showwid->openglwid, &GLWidget::updateReconstructRGB);
+        measuresys->beforeconstruct(measuresys->N);
+        measuresys->beforeconstruct();
+        measuresys->reconstruct();
+        processthreadobj->timer.start(10);
 
-	}
+    }
 
     ui->listWidget_2->scrollToBottom();
     emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
@@ -529,155 +674,6 @@ void MainWindow::ectfullCalibration()
                                               ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
-
-///
-/// \brief MainWindow::creating...............
-///
-void MainWindow::createToolBars()
-{
-    toolmode=addToolBar("mode");
-    toolmode->addAction(ECT_action);
-    toolmode->addAction(tdlas_action);
-
-    toolusb=addToolBar("usb");
-    toolusb->addAction(openusb_action);
-    toolusb->addAction(closeusb_action);
-
-
-    tooldataacquisition=addToolBar("data_acquisition");
-    tooldataacquisition->addAction(dataacquisition_action);
-    tooldataacquisition->addAction(startdataacquisition_action);
-    tooldataacquisition->addAction(stopdataacquisition_action);
-
-    toolreconstruction=addToolBar("reconstruction");
-    toolreconstruction->addAction(reconstruct_action);
-    //insert here
-
-}
-
-void MainWindow::createaction()
-{
-    openusb_action= new QAction(QIcon(":/new/prefix1/images/usb1.png"),"openusb",this);
-    connect(openusb_action,SIGNAL(triggered()),this,SLOT(openusb()));
-
-    closeusb_action=new QAction(QIcon(":/new/prefix1/images/lan-break.png"),"closeusb",this);
-    connect(closeusb_action,SIGNAL(triggered()),this,SLOT(closeusb()));
-
-    tdlas_action=new QAction("tdlas",this);
-    connect(tdlas_action,SIGNAL(triggered()),this,SLOT(tdlas()));
-    tdlas_action->setCheckable(true);
-
-    ECT_action= new QAction("ECT",this);
-    connect(ECT_action,SIGNAL(triggered()),this,SLOT(Ect()));
-    ECT_action->setCheckable(true);
-
-    dataacquisition_action=new QAction(QIcon(":/new/prefix1/images/directory.png"),"Dir of data acquisition",this);
-    connect(dataacquisition_action,SIGNAL(triggered()),this,SLOT(dataacquisition()));
-
-    stopdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/stop.png"),"stop",this);
-    connect(stopdataacquisition_action,SIGNAL(triggered()),this,SLOT(stopdataacquisition()));
-
-    startdataacquisition_action= new QAction(QIcon(":/new/prefix1/images/start.png"),"start",this);
-    connect(startdataacquisition_action,SIGNAL(triggered()),this,SLOT(startdataacquisition()));
-
-    reconstruct_action=new QAction("reconstruct",this);
-    connect(reconstruct_action,SIGNAL(triggered()),SLOT(reconstruct()));
-
-    LBP=new QAction("LBP",this);
-
-    caldelong=new QAction("caldelong",this);
-}
-
-void MainWindow::createmenus()//insert codes
-{
-    ui->menu->addAction(tdlas_action);
-    ui->menu->addAction(ECT_action);
-    ui->menu->addAction(openusb_action);
-
-    menualgorithm=new QMenu("algorithm");
-    ui->menureconstruct->addMenu(menualgorithm);
-    ui->menureconstruct->addAction(reconstruct_action);
-    menualgorithm->addAction(LBP);
-    menualgorithm->addAction(caldelong);
-}
-
-void MainWindow::createdockwidget()
-{
-   if(mode::m_mode==mode::ECT)
-       createectWidget();
-
-    statusdock=new QDockWidget(tr("status"),this);
-    statuscontent=new mystatuscontent;
-    statuslayout=new QGridLayout(statuscontent);
-    connect(ui->listWidget_2,SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-            this,SLOT(changelistitemcolor(QListWidgetItem*,QListWidgetItem*)));
-    ui->listWidget_2->setAutoScroll(true);
-    statuscontent->setPalette(QPalette(QColor(199,237,204)));
-    statuscontent->setAutoFillBackground(true);
-    statuslayout->addWidget(ui->listWidget_2);
-
-    statusdock->setWidget(statuscontent);
-
-    addDockWidget(Qt::BottomDockWidgetArea,statusdock);
-
-}
-
-void MainWindow::createtdlasview()
-{
-
-}
-
-void MainWindow::createtdlasWidget()
-{
-
-}
-
-void MainWindow::createectview()
-{
-    if(!showwid->paintusbect->isVisible()){
-        showwid->paintusbect->setVisible(true);
-     }
-
-}
-
-void MainWindow::createectWidget()
-{
-    ectdock=new QDockWidget(tr("ECT"),this);
-    ectdockcontent=new QWidget;
-    ectdockcontent->setPalette(QPalette(Qt::white));
-    ectdockcontent->setAutoFillBackground(true);
-    ectdocklayout=new QGridLayout(ectdockcontent);
-    ectdocklayout->setContentsMargins(0,0,0,0);
-    electrode_numberbox=new QComboBox;
-    QStringList list;
-    list<<"16"<<"12"<<"8";
-    electrode_numberbox->addItems(list);
-    connect(electrode_numberbox,SIGNAL(activated(QString)),this,SLOT(setelectrodenum(QString)));
-    electrode_numberlabel=new QLabel("electrode_number");
-    ectdocklayout->addWidget(electrode_numberlabel,0,0);
-    ectdocklayout->addWidget(electrode_numberbox,0,1);
-
-    chosedifference=new QLabel("measurement data");
-    chosedifferencebox=new QComboBox;
-    list.clear();
-    list<<"origin"<<"difference";
-    chosedifferencebox->addItems(list);
-    connect(chosedifferencebox,SIGNAL(activated(QString)),this,SLOT(setectdifference(QString)));
-    ectdocklayout->addWidget(chosedifference,1,0);
-    ectdocklayout->addWidget(chosedifferencebox,1,1);
-
-    voidbutton = new QPushButton(tr("void"),ectdockcontent);
-    connect(voidbutton, SIGNAL(clicked()), this, SLOT(ectvoidCalibration()));
-    fullbutton = new QPushButton(tr("full"),ectdockcontent);
-    connect(fullbutton, SIGNAL(clicked()), this, SLOT(ectfullCalibration()));
-    ectdocklayout->addWidget(voidbutton,2,0);
-    ectdocklayout->addWidget(fullbutton,2,1);
-
-
-    ectdock->setWidget(ectdockcontent);
-    ectdock->layout()->setSizeConstraint(QLayout::SetDefaultConstraint);
-    addDockWidget(Qt::RightDockWidgetArea,ectdock);
-}
 
 void MainWindow::changelistitemcolor(QListWidgetItem *current, QListWidgetItem *previous)
 {
