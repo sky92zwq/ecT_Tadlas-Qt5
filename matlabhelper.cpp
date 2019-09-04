@@ -97,11 +97,12 @@ void MatlabHelper::process1cirledata(float *onearg)
 
     if (mode::m_mode == mode::ECT)
     {
+        //TO DO:
+        //需要完成ECT算法
         for (int i = 0; i < ect->measurenumber(); i++)
-            z[i] = onearg[i] /*- ect->datavoid.data()[i]*/;
+            z[i] = onearg[i];/*- ect->datavoid.data()[i]*/
         ////	//matlab .lib
         //    time.start();
-        calderon_circle_16_electrodes_ssjwq(z, 4, R_temp, G_temp, B_temp);
         //calderon_circle_16_electrodes_ssj(z, 4, R_temp, R_size, G_temp, G_size, B_temp, B_size);
         ////    (*usecalderon16)(z,4,R_temp,R_size,G_temp,G_size,B_temp,B_size);
         //    qDebug()<<time.elapsed()/1000.0;
