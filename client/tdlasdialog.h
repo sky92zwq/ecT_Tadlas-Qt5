@@ -2,7 +2,6 @@
 #define TDLASDIALOG_H
 
 #include <QDialog>
-#include "cs_ftfunction.h"
 #include "mainwindow.h"
 #include <qmessagebox.h>
 #include <qsizepolicy.h>
@@ -21,9 +20,7 @@ public:
 
 private:
     Ui::tdlasDialog *ui;
-    CS_ftfunction *usb;
-public slots:
-    void acceptusb(CS_ftfunction *u);
+
 private slots:
     void on_lazer1openclose_clicked();
     bool setlazeropen(quint16 lazer);

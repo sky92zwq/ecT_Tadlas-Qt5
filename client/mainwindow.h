@@ -2,35 +2,32 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "cs_ftfunction.h"
-#include "tdlasdialog.h"
-#include <qdockwidget.h>
-#include <qtoolbar.h>
+#include <QVBoxLayout>
+#include <QFrame>
 #include <QFile>
+#include <QPainter>
+#include <qopengl.h>
+#include <QOpenGLWidget>
+#include <qlayout.h>
+#include <qtoolbar.h>
+#include <qdockwidget.h>
 #include <qfiledialog.h>
 #include <qdatetime.h>
 #include <qthread.h>
-#include <qmutex.h>
 #include <qmath.h>
-#include "mythreads.h"
-#include <QPainter>
-#include "mypaintusb.h"
-#include <qlayout.h>
-#include <QVBoxLayout>
-#include <QFrame>
-#include <qopengl.h>
-#include <QOpenGLWidget>
-#include "ectclass.h"
+#include <qmutex.h>
 #include <qcombobox.h>
 #include <qlabel.h>
-#include <myshowwidget.h>
-#include "mode.h"
 #include <QPushButton>
-#include "matlabhelper.h"
 #include <QListWidgetItem>
-#include "tikhonov_alg.h"
-#include "EctSys.h"
-#include "TdlasSys.h"
+
+#include "tdlasdialog.h"
+#include "mythreads.h"
+#include "mypaintusb.h"
+#include "cbb/ectclass.h"
+#include "cbb/mode.h"
+#include <myshowwidget.h>
+
 
 
 namespace Ui {
@@ -50,13 +47,7 @@ public:
 
 	void resizeEvent(QResizeEvent *event);
 public:
-	CS_ftfunction usb;
-
 	ECTClass *ect;
-
-	MeasureSys *	measuresys;
-	EctSys	   *	EctSysObj;
-	TdlasSys   *	TdlasSysObj;
 
 
 	protected slots:
@@ -96,11 +87,11 @@ public:
 	void ectfullCalibration();
 signals:
 
-	void startacquisition(CS_ftfunction &usb, QString savedirectory);
+	void startacquisition( QString savedirectory);
 	void stopacquisition1(bool);
 	void stopacquisition2(bool);
 signals:
-	void transmitusb(CS_ftfunction *);
+	void transmitusb();
 
 private:
 	void createToolBars();
@@ -177,7 +168,6 @@ public:
 	processThreadobj *processthreadobj;
 	QThread *processthread;
 	QThread *matlabthread;
-	MatlabHelper *matlabhelper;
 
 	QByteArray RWbyte;
 

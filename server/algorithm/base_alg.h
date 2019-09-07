@@ -16,8 +16,8 @@ public:
 
     void initial_others();
 public:
-	int N;
-	const int num_detec = 60;
+    int N;
+    const int num_detec = 60;
     SparseMatrix<double> L;
     void read_L(QString dir);
     VectorXd b;
@@ -29,8 +29,8 @@ public:
     void set_K(int k);
     void set_x();
 public:
-	VectorXd R, G, B;
-	void set_RGB();
+    VectorXd R, G, B;
+    void set_RGB();
 
 
 };

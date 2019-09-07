@@ -6,13 +6,13 @@ class TdlasSys :
 	public MeasureSys
 {
 public:
-	TdlasSys(CS_ftfunction *u, int bl, int n) ;
+	TdlasSys( int bl, int n) ;
 	~TdlasSys();
 public:
-	void TdlasSys::start_acq_command();
-	void TdlasSys::stop_acq_command();
-	void TdlasSys::beforeconstruct();
-	void TdlasSys::reconstruct();
+	void start_acq_command();
+	void stop_acq_command();
+	void beforeconstruct();
+	void reconstruct();
 private:
 	Tikhonov_Alg *tik_worker;
 	QThread *openglThread;

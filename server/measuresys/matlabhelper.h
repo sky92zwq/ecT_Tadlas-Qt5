@@ -4,13 +4,12 @@
 #include <QObject>
 #include <QFile>
 #include <QLibrary>
-#include "ectclass.h"
-#include "mythreads.h"
+#include "cbb/ectclass.h"
 
-#include "tdlasclass.h"
+#include "cbb/tdlasclass.h"
 
 #include <QTime>
-#include "rwhelper.h"
+#include "cbb/rwhelper.h"
 class MatlabHelper : public QObject
 {
     Q_OBJECT

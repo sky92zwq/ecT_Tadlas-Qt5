@@ -2,7 +2,6 @@
 #define MYTHREADS_H
 
 #include <QObject>
-#include "cs_ftfunction.h"
 #include <qtoolbar.h>
 #include <QFile>
 #include <QTextStream>
@@ -10,8 +9,8 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qmath.h>
-#include "ectclass.h"
-#include "mode.h"
+#include "cbb/ectclass.h"
+#include "cbb/mode.h"
 
 #include <QTimer>
 #include <QMutex>
@@ -24,7 +23,7 @@ class RWThread : public QThread
 
 public:
     //usb,二进制文件，buffer长度，标志，锁
-    explicit RWThread(CS_ftfunction *u, QFile *df,const int bl,bool rf,QMutex *lk)
+    explicit RWThread( QFile *df,const int bl,bool rf,QMutex *lk)
         :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){
         RxBuffer=(unsigned char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
         //ZeroMemory(RxBuffer,bufferlong-10);
@@ -44,7 +43,6 @@ signals:
 public slots:
     void stoprun(bool flag);
 private:
-    CS_ftfunction   *usb;
     QFile           *datafile;
     QMutex          *lock;
     bool            runflag;

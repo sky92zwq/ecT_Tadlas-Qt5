@@ -1,4 +1,5 @@
 ﻿#include "matlabhelper.h"
+#include "cbb/mode.h"
 #include <QDebug>
 
 MatlabHelper::MatlabHelper(QObject *parent)
@@ -15,10 +16,10 @@ MatlabHelper::MatlabHelper(QObject *parent)
     rwobj.readtxt(tdlas_L,"./Lb/L.txt");
     rwobj.readtxt(tdlas_b,"./Lb/b.txt");
 
-    ZeroMemory(R_temp,sizeof(R_temp));
-    ZeroMemory(G_temp,sizeof(G_temp));
-    ZeroMemory(B_temp,sizeof(B_temp));
-    ZeroMemory(z,sizeof(z));
+    memset(R_temp,0,sizeof(R_temp));
+    memset(G_temp,0,sizeof(G_temp));
+    memset(B_temp,0,sizeof(B_temp));
+    memset(z,0,sizeof(z));
 
 }
 

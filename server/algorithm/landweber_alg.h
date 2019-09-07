@@ -18,7 +18,7 @@ public:
 
 	void set_newL(const SparseMatrix<double> &theL);
 	void set_newb(const VectorXd &theb);
-	inline void landweber_Alg::set_lamda()
+	inline void set_lamda()
 	{
 
 		BDCSVD<MatrixXd> bm = newL.toDense().bdcSvd();

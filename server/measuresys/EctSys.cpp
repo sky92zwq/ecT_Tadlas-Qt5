@@ -1,7 +1,7 @@
 #include "EctSys.h"
 
-EctSys::EctSys(CS_ftfunction *u = nullptr, int bl = 4096, int n = 48)
-    : MeasureSys::MeasureSys(u, bl, n)
+EctSys::EctSys( int bl = 4096, int n = 48)
+    : MeasureSys::MeasureSys( bl, n)
 {
     name = "ECT";
 }

@@ -1,35 +1,32 @@
 #pragma once
-#include "ftd2xx/cs_ftfunction.h"
 #include <qbytearray.h>
 #include <qdatastream.h>
 #include "qthread.h"
-#include <qmainwindow.h>
 #include <QObject>
 
 class MeasureSys :public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit MeasureSys(CS_ftfunction *u, int bl, int n);
-	~MeasureSys();
+    explicit MeasureSys( int bl, int n);
+    ~MeasureSys();
 public://methods
-	virtual void start_acq_command() = 0;
-	virtual void stop_acq_command() = 0;
-	virtual void beforeconstruct() = 0;
-	virtual void beforeconstruct(int N);
-	virtual void reconstruct() = 0;
+    virtual void start_acq_command() = 0;
+    virtual void stop_acq_command() = 0;
+    virtual void beforeconstruct() = 0;
+    virtual void beforeconstruct(int N);
+    virtual void reconstruct() = 0;
 public://var
-	CS_ftfunction *usb;
-	int bufferlong;
-	int N;
-	QByteArray TxBuffer;//写入命令用
-	QString name;
+    int bufferlong;
+    int N;
+    QByteArray TxBuffer;//写入命令用
+    QString name;
 
 signals:
-	void reconstructN(int N);
+    void reconstructN(int N);
 signals:
-	void reconstructedRGB(double*R, double*G, double*B);
+    void reconstructedRGB(double*R, double*G, double*B);
 signals:
-	void sigOneFrame(float *);
+    void sigOneFrame(float *);
 };
 

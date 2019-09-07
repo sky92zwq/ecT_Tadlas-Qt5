@@ -2,7 +2,7 @@
 
 
 
-TdlasSys::TdlasSys(CS_ftfunction *u, int bl, int n) :MeasureSys::MeasureSys(u, bl, n)
+TdlasSys::TdlasSys( int bl, int n) :MeasureSys::MeasureSys( bl, n)
 {
     name = "TDLAS";
 

@@ -1,6 +1,6 @@
 ﻿#ifndef TIKHONOV_ALG_H
 #define TIKHONOV_ALG_H
-#include <qstring.h>
+#include <QString>
 #include "base_alg.h"
 #include "landweber_alg.h"
 

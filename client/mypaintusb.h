@@ -6,7 +6,7 @@
 #include <QBrush>
 #include <QPainter>
 #include <QPoint>
-#include "ectclass.h"
+#include "cbb/ectclass.h"
 #include "mythreads.h"
 #include <qtimer.h>
 
