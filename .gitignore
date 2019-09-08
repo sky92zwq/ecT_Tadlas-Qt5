@@ -241,4 +241,16 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 
-*.opendb 
+*.opendb
+# MY
+*.so
+*.dll
+*.a
+*.exe
+*.out
+c_cpp_properties.json
+settings.json
+*bak
+*.user 
+*.gitignore
+

@@ -84,14 +84,7 @@ void myPaintusb::setonecirclepoints(float*vec,float max,float min)
     update();
 }
 
-void myPaintusb::updatepoints(argfordraw *arg)
-{
-    setpoints(arg->tran,arg->maxtransfer,arg->mintransfer);
-}
 
-void myPaintusb::updateonencirclepoints(float*v,float max,float min)
-{
-    setonecirclepoints(v,max,min);
-}
+
 
 

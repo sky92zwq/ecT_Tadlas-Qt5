@@ -65,89 +65,18 @@ void tdlasDialog::on_lazer1openclose_clicked()
 
 bool tdlasDialog::setlazeropen(quint16 lazer)
 {
-    if (usb->getnumDEv() && usb->isopened())
-    {
-        QByteArray TxBuffer; //准备写入usb的发送命令
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        in << (quint16)lazer << (quint16)0x0000;
-        DWORD BytesReceived; //向下写入发送命令
 
-        if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
-        {
-            QString str = "lazer open";
-            emit mystatus(str);
-
-            qDebug() << BytesReceived;
-            return true;
-        }
-        else
-            return false;
-    }
-    else
-    {
-        QMessageBox::critical(NULL, "critical", "FT_device is not found or open",
-                              QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        return false;
-    }
 }
 
 bool tdlasDialog::setlazerclose(quint16 lazer)
 {
-    if (usb->getnumDEv() && usb->isopened())
-    {
-        QByteArray TxBuffer; //准备写入usb的发送命令
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        in << (quint16)lazer << (quint16)0x0000;
-        DWORD BytesReceived; //向下写入发送命令
 
-        if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
-        {
-            QString str = "lazer close";
-            emit mystatus(str);
-
-            qDebug() << BytesReceived;
-            return true;
-        }
-        else
-            return false;
-    }
-    else
-    {
-        QMessageBox::critical(NULL, "critical", "FT_device is not found or open",
-                              QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        return false;
-    }
 }
 
 void tdlasDialog::on_setlazer1tc_clicked()
 {
 
-    if (usb->getnumDEv() && usb->isopened())
-    {
-        if (lazerneedopen == false)
-        {
 
-            QByteArray TxBuffer; //准备写入usb的发送命令
-            QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-            quint8 floor = qFloor(ui->setlazer1tcbox->value());
-            in << (quint16)0x1111 << floor << (quint8)(ui->setlazer1tcbox->value() - floor) * 255; //double to dword??
-            DWORD BytesReceived;                                                                   //向下写入发送命令
-
-            if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
-            {
-                //emit lasersetting("lazer close");
-
-                qDebug() << BytesReceived;
-                return;
-            }
-        }
-    }
-    else
-    {
-        QMessageBox::critical(NULL, "critical", "FT_device is not found or open",
-                              QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        return;
-    }
 }
 
 void tdlasDialog::on_das_clicked(bool checked)
@@ -281,13 +210,13 @@ void tdlasDialog::on_buttonBox_clicked(QAbstractButton *button)
                     QByteArray TxBuffer; //准备写入usb的发送命令
                     QDataStream in(&TxBuffer, QIODevice::ReadWrite);
                     in << (quint16)0x0101 << (quint16)0x0000;
-                    DWORD BytesReceived; //向下写入发送命令
+                    quint32 BytesReceived; //向下写入发送命令
 
-                    if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
-                    {
-                        //emit lasersetting("lazer open");
-                        qDebug() << BytesReceived;
-                    }
+                    // if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
+                    // {
+                    //     //emit lasersetting("lazer open");
+                    //     qDebug() << BytesReceived;
+                    // }
 
                     //写入das的参数8字节
                     TxBuffer.clear();
@@ -296,19 +225,15 @@ void tdlasDialog::on_buttonBox_clicked(QAbstractButton *button)
                     double wlmax = ui->das_maxwl->value();
                     double wlmin = ui->das_minwl->value();
 
-                    WORD frequency = 10000000 / bwfre;
-                    WORD duty = frequency * bwdut;
-                    WORD maximum = wlmax;
-                    WORD minimum = wlmin;
-                    WORD ratio = ((double)(maximum - minimum) / (double)duty) * (4096);
+                    quint16 frequency = 10000000 / bwfre;
+                    quint16 duty = frequency * bwdut;
+                    quint16 maximum = wlmax;
+                    quint16 minimum = wlmin;
+                    quint16 ratio = ((double)(maximum - minimum) / (double)duty) * (4096);
 
                     in << frequency << duty << ratio << minimum;
 
-                    if (usb->Write(TxBuffer.data(), 8, &BytesReceived) == FT_OK && BytesReceived == 8)
-                    {
-                        //emit
-                        qDebug() << "writedas canshu " << BytesReceived;
-                    }
+
                 }
                 if (ui->wms->isChecked())
                 {
@@ -316,13 +241,13 @@ void tdlasDialog::on_buttonBox_clicked(QAbstractButton *button)
                     QByteArray TxBuffer; //准备写入usb的发送命令
                     QDataStream in(&TxBuffer, QIODevice::ReadWrite);
                     in << (quint16)0x0201 << (quint16)0x0000;
-                    DWORD BytesReceived; //向下写入发送命令
+                    quint32 BytesReceived; //向下写入发送命令
 
-                    if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
-                    {
-                        //emit lasersetting("lazer open");
-                        qDebug() << BytesReceived;
-                    }
+                    // if (usb->Write(TxBuffer.data(), 4, &BytesReceived) == FT_OK && BytesReceived == 4)
+                    // {
+                    //     //emit lasersetting("lazer open");
+                    //     qDebug() << BytesReceived;
+                    // }
                     //准备写入wms的参数
                     TxBuffer.clear();
                     double fwfre = ui->wms_basefr->value();
@@ -333,22 +258,22 @@ void tdlasDialog::on_buttonBox_clicked(QAbstractButton *button)
                     double swlfreq = ui->wms_sinfr->value();
                     double swlampl = ui->wms_sinam->value();
                     //计算WMS各项参数
-                    WORD fw_frequency = 10000000 / fwfre;
-                    WORD fw_duty = fw_frequency * fwduty;
-                    WORD fw_maximum = fwlmax;
-                    WORD fw_minimum = fwlmin;
-                    WORD fw_ratio = ((double)(fw_maximum - fw_minimum) / (double)fw_duty) * (4096); //放大了4096倍
+                    quint16 fw_frequency = 10000000 / fwfre;
+                    quint16 fw_duty = fw_frequency * fwduty;
+                    quint16 fw_maximum = fwlmax;
+                    quint16 fw_minimum = fwlmin;
+                    quint16 fw_ratio = ((double)(fw_maximum - fw_minimum) / (double)fw_duty) * (4096); //放大了4096倍
 
-                    WORD sw_frequency = 10000000 / swlfreq;
-                    WORD sw_amplitude = swlampl;
-                    WORD times = swlfreq / fwfre;
+                    quint16 sw_frequency = 10000000 / swlfreq;
+                    quint16 sw_amplitude = swlampl;
+                    quint16 times = swlfreq / fwfre;
 
-                    WORD swl[1024];
-                    WORD num = 14 + 2 * sw_frequency;
+                    quint16 swl[1024];
+                    quint16 num = 14 + 2 * sw_frequency;
                     for (int i = 0; i < sw_frequency; i++)
                     {
                         //采用四舍五入算法
-                        swl[i] = (WORD)((swlampl * (abs(sinf((double)i / sw_frequency * 2 * M_PI)))) + 0.5);
+                        swl[i] = (quint16)((swlampl * (abs(sinf((double)i / sw_frequency * 2 * M_PI)))) + 0.5);
                     }
 
                     //                    //将WMS写入FPGA，使之进入WMS状态

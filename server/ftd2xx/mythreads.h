@@ -11,6 +11,7 @@
 #include <qmath.h>
 #include "cbb/ectclass.h"
 #include "cbb/mode.h"
+#include "cs_ftfunction.h"
 
 #include <QTimer>
 #include <QMutex>
@@ -24,7 +25,7 @@ class RWThread : public QThread
 public:
     //usb,二进制文件，buffer长度，标志，锁
     explicit RWThread( QFile *df,const int bl,bool rf,QMutex *lk)
-        :usb(u),datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){
+        :datafile(df),bufferlong(bl),runflag(rf),lock(lk),QThread(){
         RxBuffer=(unsigned char*)malloc(bufferlong+1);//if(RxBuffer==NULL)可能需要保护判断
         //ZeroMemory(RxBuffer,bufferlong-10);
         datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);

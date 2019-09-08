@@ -7,7 +7,6 @@
 #include <QPainter>
 #include <QPoint>
 #include "cbb/ectclass.h"
-#include "mythreads.h"
 #include <qtimer.h>
 
 class myPaintusb : public QWidget
@@ -22,9 +21,6 @@ public:
     void setonecirclepoints(float *vec, float max, float min);
 signals:
 
-public slots:
-    void updatepoints(argfordraw *arg);
-    void updateonencirclepoints(float *v, float max, float min);
 
 public:
     QPen pen;

@@ -9,7 +9,7 @@ void RWThread::run(){
     while(runflag==true){
         //加锁
         lock->lock();
-        usb->Read(RxBuffer,bufferlong,&BytesReceived);
+        CS_ftfunction::Instance()->Read(RxBuffer,bufferlong,&BytesReceived);
         //msleep(190);
         lock->unlock();
         //锁

@@ -20,16 +20,11 @@ MainWindow::MainWindow(QWidget *parent) :
     createdockwidget(); //停靠部件
 
     datafile = NULL;
-    rwthread1 = NULL;
-    rwthread2 = NULL;
     savedirectory = "./";
 
     showwid = new showwidget;
     setCentralWidget(showwid);
 
-    EctSysObj = new EctSys(&usb, 4096, 48);
-    TdlasSysObj = new TdlasSys(&usb, 4096, 20);
-    measuresys = EctSysObj;
     if (mode::m_mode == mode::ECT)
         Ect();
     if (mode::m_mode == mode::TDlas)
@@ -237,58 +232,14 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::openusb()//closeusb action
 {
-    statusdock->setVisible(true);//使停靠栏可见
-
-    DWORD numdev;
-    QString num;
-    usb.GetDeviceInfoList(&numdev);
-    num=QString::number((quint16)numdev);
-    num+=" devices";
-    ui->listWidget_2->addItem(num);
-
-    QString label("dev");
-    DWORD i=0;
-    if(!usb.isopened()){
-        for(;i<numdev;i++){
-            if(QString(usb.devInfo[i].Description)==QString("USB 2.0 <-> ECT Core Board A")){
-                label+=QString::number(i);
-                label+=": ";
-                label+=usb.status.at(usb.Open(i));
-                ui->listWidget_2->addItem(label);
-                break;
-            }
-        }
-    }
-    else{
-        ui->listWidget_2->addItem("device is allrdeay open");
-    }
-    usb.Purge(4096);
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 void MainWindow::closeusb()//closeusb action
 {
-    statusdock->setVisible(true);//使停靠栏可见
-
-    QString label;
-    if(usb.isopened()&&!needstop){
-
-        label+=usb.status.at(usb.Close());
-        ui->listWidget_2->addItem(label);
-    }
-    else
-        ui->listWidget_2->addItem("device  is allrdeay closed");
-
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 void MainWindow::tdlas()
 {
-    measuresys = TdlasSysObj;
     mode::m_mode=mode::TDlas;
     ectdock->setVisible(false);
 
@@ -298,15 +249,11 @@ void MainWindow::tdlas()
     createtdlasview();
 
     tdlasDialog tdlasdl;
-    connect(this,&MainWindow::transmitusb,&tdlasdl,&tdlasDialog::acceptusb);
-    connect(&tdlasdl,&tdlasDialog::mystatus,this,&MainWindow::childrenWidstatus);
-    emit transmitusb(&usb);
     tdlasdl.exec();
 }
 
 void MainWindow::Ect()
 {
-    measuresys = EctSysObj;
     mode::m_mode=mode::ECT;
     if(!ectdock->isVisible())ectdock->setVisible(true);
 
@@ -322,213 +269,24 @@ void MainWindow::Ect()
 
 void MainWindow::dataacquisition()//数据采集 action
 {
-    statusdock->setVisible(true);//使停靠栏可见
-    //usb.getnumDEv()
-    //usb.isopened()
-    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
-    //options |= QFileDialog::DontUseNativeDialog;
-    currentdirectory = QFileDialog::getExistingDirectory(this,
-                                                              tr("Save Directory"),
-                                                              "",
-                                                              options);
-    if (currentdirectory.isEmpty()){
-        qDebug()<<"err";
-        return;
-    }
-    else{
-        savedirectory=currentdirectory;
-
-        if(savedirectory=="C:/"){
-            ui->listWidget_2->addItem("do not use C:/ as a saving position");
-            ui->listWidget_2->addItem("change dir and try again");
-            return;
-        }
-    }
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 
 }
 
 void MainWindow::stopdataacquisition()//停止数据采集 action
 {
-    if(datafile!=NULL&&rwthread1!=NULL){
-        stopdataacquisition_action->setEnabled(false);
-
-        rwthread1->disconnect(processthreadobj);
-        rwthread2->disconnect(processthreadobj);
-
-        processthreadobj->disconnect();
-        if(reconstructflag){
-            matlabhelper->disconnect();
-            if(matlabthread->isRunning()){
-                reconstructflag=false;
-                matlabthread->quit();
-                processthreadobj->timer.stop();
-                //matlabthread->wait();
-            }
-        }
-        processthread->quit();
-        processthread->wait();
-
-        emit stopacquisition2(false);
-        rwthread2->wait();
-        emit stopacquisition1(false);
-        rwthread1->wait();
-
-
-        datafile->close();
-        txtfile->flush();
-        txtfile->close();
-
-        DWORD BytesReceived;
-        measuresys->stop_acq_command();
-        if (usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(), &BytesReceived) == FT_OK && BytesReceived == measuresys->TxBuffer.size())
-        {
-            ui->listWidget_2->addItem(QString("stop command ") + measuresys->name);
-        }
-    }
-
-    startdataacquisition_action->setEnabled(true);
-    needstop=false;
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 void MainWindow::startdataacquisition()//开始采集
 {
-    if(usb.isopened()){//usb.isopened()
-
-        startdataacquisition_action->setEnabled(false);
-        ui->listWidget_2->addItem("save at "+savedirectory);
-
-        QDateTime datetime=QDateTime::currentDateTime();//准备文件二进制
-        QString dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
-        QDir::setCurrent(savedirectory);
-        datafile=new QFile(measuresys->name+dt+"_acquisition.bin");//准备文件
-        //datafile->open(QIODevice::ReadWrite|QIODevice::Append|QIODevice::Truncate);
-         //datetime=QDateTime::currentDateTime();//准备文件txt
-         //dt= datetime.toString("yyyy-MM-dd_HH：mm：ss");
-        QDir::setCurrent(savedirectory);
-        txtfile=new QFile(measuresys->name+dt+"_acquisition.txt");
-        txtfile->open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);//准备文件
-
-
-        lockthread=new QMutex;
-
-        //THread 1
-        rwthread1= new RWThread(&usb,datafile,4096,true,lockthread);
-        connect(rwthread1,&RWThread::readbuffer,this,&MainWindow::threadstatus);
-        connect(this,&MainWindow::stopacquisition1,rwthread1,&RWThread::stoprun,Qt::DirectConnection);
-        connect(rwthread1, &RWThread::finished, rwthread1, &QObject::deleteLater);
-        connect(rwthread1, &RWThread::finished, this, &MainWindow::setrwthread1null);
-        //Thread2
-        rwthread2= new RWThread(&usb,datafile,4096,true,lockthread);
-        connect(rwthread2,&RWThread::readbuffer,this,&MainWindow::threadstatus);
-        connect(this,&MainWindow::stopacquisition2,rwthread2,&RWThread::stoprun,Qt::DirectConnection);
-        connect(rwthread2, &RWThread::finished, rwthread2, &QObject::deleteLater);
-        connect(rwthread2, &RWThread::finished, this, &MainWindow::setrwthread2null);
-        connect(rwthread2, &RWThread::finished, this, &MainWindow::deletemylock);
-        //processThread
-        processthread=new QThread();
-        processthreadobj=new processThreadobj(datafile,4096,true,txtfile);
-        processthreadobj->moveToThread(processthread);
-        connect(rwthread1,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
-        connect(rwthread1,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
-
-        connect(rwthread2,&RWThread::sigECTtransfer,processthreadobj,&processThreadobj::transferforECTdrawing);
-        connect(rwthread2,&RWThread::sigTDlastransfer,processthreadobj,&processThreadobj::transferforTDlasdrawing);
-        //connect(rwthread2, &RWThread::quitprocess, processthread, &QThread::quit);
-        //connect(rwthread2, &RWThread::finished, processthread, &QThread::quit);
-
-        connect(processthreadobj,&processThreadobj::sigdrawECTusbdata,showwid->paintusbect,&myPaintusb::updatepoints,Qt::DirectConnection);//同步！！
-        connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
-        connect(processthreadobj,&processThreadobj::sigdrawECTdifference,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
-        connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&MainWindow::drawTDlasusbdata);
-        connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()), Qt::DirectConnection);//sigECTonecircledata
-        connect(processthreadobj, &processThreadobj::sigECTonecircledata, measuresys, &MeasureSys::sigOneFrame);
-        connect(processthread,&QThread::finished, processthread, &QObject::deleteLater);
-        connect(processthread,&QThread::finished, processthreadobj, &QObject::deleteLater);
-
-        DWORD BytesReceived;
-        measuresys->start_acq_command();
-        if(usb.Write(measuresys->TxBuffer.data(), measuresys->TxBuffer.size(),
-            &BytesReceived)==FT_OK && BytesReceived==measuresys->TxBuffer.size())
-            ui->listWidget_2->addItem(QString("start command ")+measuresys->name);
-        usb.SetTimeouts(5000, 1000);
-
-        //if(mode::m_mode==mode::TDlas){
-        //    in<<(quint16)0x8800<<(quint16)4096;
-        //    if(usb.Write(TxBuffer.data(),4,&BytesReceived)==FT_OK&&BytesReceived==4)
-        //        ui->listWidget_2->addItem("start TDLAS commond");
-        //    qDebug()<<BytesReceived;
-        //    UCHAR MASK = 0xff;
-        //    UCHAR MODE = 0x40;
-        //    usb.SetBitMode(MASK, MODE);
-        //    usb.SetTimeouts(5000,1000);// Set read timeout of 5sec, write timeout of 1sec
-
-
-        rwthread1->start();//开始线程吧
-        rwthread2->start();//开始线程吧
-        processthread->start();//开始线程吧
-
-        stopdataacquisition_action->setEnabled(true);
-        needstop=true;
-    }
-    else
-        ui->listWidget_2->addItem("open usb first");
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 void MainWindow::reconstruct()
 {
-    if (!reconstructflag && needstop)
-    {
-        connect(measuresys, &MeasureSys::reconstructN, showwid->openglwid, &GLWidget::updateReconstructN);
-        connect(measuresys, &MeasureSys::reconstructedRGB, showwid->openglwid, &GLWidget::updateReconstructRGB);
-        measuresys->beforeconstruct(measuresys->N);
-        measuresys->beforeconstruct();
-        measuresys->reconstruct();
-        processthreadobj->timer.start(10);
-
-    }
-
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 
 }
 
-void MainWindow::drawTDlasusbdata(argfordraw *arg)
+void MainWindow::drawTDlasusbdata()
 {
-
-}
-
-void MainWindow::setrwthread1null()
-{
-    rwthread1=NULL;
-}
-
-void MainWindow::setrwthread2null()
-{
-    rwthread2=NULL;
-}
-
-void MainWindow::deletemylock()
-{
-    delete lockthread;
-    lockthread=NULL;
-}
-
-void MainWindow::threadstatus(double st)//slot
-{
-    QString label;
-    label.setNum(st);
-    ui->listWidget_2->addItem(label);
-    ui->listWidget_2->scrollToBottom();
 
 }
 
@@ -559,119 +317,10 @@ void MainWindow::setectdifference(const QString &differ)
 }
 void MainWindow::ectvoidCalibration()
 {
-    if(usb.isopened()&& !needstop){
-        //prepare files
-        QDateTime datetime = QDateTime::currentDateTime();//׼���ļ�txt
-        QString dt = datetime.toString("yyyy-MM-dd-HH：mm：ss");
-        QDir::setCurrent(savedirectory);
-        QFile *txtvoidfile = new QFile("ECT_" + dt + "_void.txt");
-        txtvoidfile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-        QTextStream txtstreamvoid(txtvoidfile);
-
-        QByteArray TxBuffer;//׼��������д��usb�ķ�������
-        TxBuffer.clear();
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        DWORD BytesReceived;//end׼��
-        in << (quint8)0x88;
-        if (usb.Write(TxBuffer.data(), 1, &BytesReceived) == FT_OK&&BytesReceived == 1)
-            ui->listWidget_2->addItem("voidcalibration 写入");
-        usb.SetTimeouts(5000, 1000);// Set read timeout of 5sec, write timeout of 1sec
-
-        const int bfl=4096;
-        unsigned char rxbuffer[bfl+1];
-        if (usb.Read(rxbuffer, bfl, &BytesReceived) == FT_OK&&BytesReceived == bfl){
-            TxBuffer.clear();
-            in << (quint8)0x77;
-            usb.Write(TxBuffer.data(), 1, &BytesReceived);
-
-            ect->setvoidcalibration(rxbuffer);
-            argfordraw void1circle;
-            float voidcircle[120];
-            void1circle.maxtransfer=ect->datavoid.data()[0];
-            void1circle.mintransfer=void1circle.maxtransfer;
-            for(int i=0;i<ect->datavoid.count();i++)
-            {
-                txtstreamvoid<<ect->datavoid.at(i)<<endl;
-                void1circle.tran.append(ect->datavoid.at(i));
-                voidcircle[i]=void1circle.tran.last();
-                if(void1circle.tran.last()>void1circle.maxtransfer)
-                    void1circle.maxtransfer=void1circle.tran.last();
-                if(void1circle.tran.last()<void1circle.mintransfer)
-                    void1circle.mintransfer=void1circle.tran.last();
-            }
-            showwid->paintusbect_2->updateonencirclepoints(voidcircle,void1circle.maxtransfer,void1circle.mintransfer);
-            txtvoidfile->close();
-            delete voidcircle;
-
-            ui->listWidget_2->addItem("voidcalibration ok");
-        }
-        else
-            ui->listWidget_2->addItem("voidcalibration failed");
-
-    }
-    else
-        ui->listWidget_2->addItem("open usb first for void calibration or runnning");
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 void MainWindow::ectfullCalibration()
 {
-    if(usb.isopened()&&!needstop){
-         //prepare files
-        QDateTime datetime = QDateTime::currentDateTime();//txt
-        QString dt = datetime.toString("yyyy-MM-dd-HH：mm：ss");
-        QDir::setCurrent(savedirectory);
-        QFile *txtfullfile = new QFile("ECT_" + dt + "_full.txt");
-        txtfullfile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-        QTextStream txtstreamfull(txtfullfile);
-
-        QByteArray TxBuffer;//
-        TxBuffer.clear();
-        QDataStream in(&TxBuffer, QIODevice::ReadWrite);
-        DWORD BytesReceived;//end
-        in << (quint8)0x88;
-        if (usb.Write(TxBuffer.data(), 1, &BytesReceived) == FT_OK&&BytesReceived == 1)
-            ui->listWidget_2->addItem("fullcalibration写入");
-        usb.SetTimeouts(5000, 1000);// Set read timeout of 5sec, write timeout of 1sec
-
-        const int bfl=4096;
-        unsigned char rxbuffer[bfl+1];
-        if (usb.Read(rxbuffer, bfl, &BytesReceived) == FT_OK&&BytesReceived == bfl){
-            TxBuffer.clear();
-            in << (quint8)0x77;
-            usb.Write(TxBuffer.data(), 1, &BytesReceived);
-
-            ect->setfullcalibration(rxbuffer);
-            argfordraw full1circle;
-            float fullcircle[120];
-            full1circle.maxtransfer=ect->datavoid.data()[0];
-            full1circle.mintransfer=full1circle.maxtransfer;
-            for(int i=0;i<ect->datafull.count();i++)
-            {
-                txtstreamfull<<ect->datafull.at(i)<<endl;
-                full1circle.tran.append(ect->datafull.at(i));
-                fullcircle[i]=full1circle.tran.last();
-                if(full1circle.tran.last()>full1circle.maxtransfer)
-                    full1circle.maxtransfer=full1circle.tran.last();
-                if(full1circle.tran.last()<full1circle.mintransfer)
-                    full1circle.mintransfer=full1circle.tran.last();
-            }
-            showwid->paintusbect_2->updateonencirclepoints(fullcircle,full1circle.maxtransfer,full1circle.mintransfer);
-
-            txtfullfile->close();
-
-            ui->listWidget_2->addItem("fullcalibration ok");
-        }
-        else
-            ui->listWidget_2->addItem("fullcalibration faild");
-    }
-    else
-        ui->listWidget_2->addItem("open usb first for full calibration or running");
-    ui->listWidget_2->scrollToBottom();
-    emit ui->listWidget_2->currentItemChanged(ui->listWidget_2->item(ui->listWidget_2->count()-1)
-                                              ,ui->listWidget_2->item(ui->listWidget_2->count()-2));
 }
 
 

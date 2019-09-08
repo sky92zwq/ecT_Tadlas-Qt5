@@ -22,7 +22,6 @@
 #include <QListWidgetItem>
 
 #include "tdlasdialog.h"
-#include "mythreads.h"
 #include "mypaintusb.h"
 #include "cbb/ectclass.h"
 #include "cbb/mode.h"
@@ -31,7 +30,7 @@
 
 
 namespace Ui {
-	class MainWindow;
+    class MainWindow;
 }
 
 
@@ -39,141 +38,128 @@ namespace Ui {
 ///
 class MainWindow : public QMainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
-	void resizeEvent(QResizeEvent *event);
+    void resizeEvent(QResizeEvent *event);
 public:
-	ECTClass *ect;
+    ECTClass *ect;
 
 
-	protected slots:
-	void openusb();
+    protected slots:
+    void openusb();
 
-	void closeusb();
+    void closeusb();
 
-	void tdlas();
+    void tdlas();
 
-	void Ect();
+    void Ect();
 
-	void dataacquisition();
+    void dataacquisition();
 
-	void stopdataacquisition();
+    void stopdataacquisition();
 
-	void startdataacquisition();
+    void startdataacquisition();
 
-	void reconstruct();
+    void reconstruct();
 
-	void drawTDlasusbdata(argfordraw *arg);
+    void drawTDlasusbdata();
 
-	void setrwthread1null();
 
-	void setrwthread2null();
+    private slots:
+    void acquisitioncount() { ; }
 
-	void deletemylock();
-	private slots:
-	void acquisitioncount() { ; }
 
-	void threadstatus(double st);//看看子线程的状态
+    void childrenWidstatus(QString &str);//看子窗口
 
-	void childrenWidstatus(QString &str);//看子窗口
-
-	void setelectrodenum(const QString &text);
-	void setectdifference(const QString &differ);
-	void ectvoidCalibration();
-	void ectfullCalibration();
+    void setelectrodenum(const QString &text);
+    void setectdifference(const QString &differ);
+    void ectvoidCalibration();
+    void ectfullCalibration();
 signals:
 
-	void startacquisition( QString savedirectory);
-	void stopacquisition1(bool);
-	void stopacquisition2(bool);
+    void startacquisition( QString savedirectory);
+    void stopacquisition1(bool);
+    void stopacquisition2(bool);
 signals:
-	void transmitusb();
+    void transmitusb();
 
 private:
-	void createToolBars();
+    void createToolBars();
 
-	void createaction();
+    void createaction();
 
-	void createmenus();
+    void createmenus();
 
-	void createdockwidget();
+    void createdockwidget();
 
-	void createtdlasview();
+    void createtdlasview();
 
-	void createtdlasWidget();
+    void createtdlasWidget();
 
-	void createectview();
+    void createectview();
 
-	void createectWidget();
+    void createectWidget();
 private:
-	Ui::MainWindow *ui;
+    Ui::MainWindow *ui;
 
-	QDateTime datetime;
-	QFile *datafile;
-	QFile *txtfile;
-	QString savedirectory, currentdirectory;
+    QDateTime datetime;
+    QFile *datafile;
+    QFile *txtfile;
+    QString savedirectory, currentdirectory;
 private:
-	QMenu *menualgorithm;
+    QMenu *menualgorithm;
 
-	QToolBar *toolmode;
-	QToolBar *toolusb;
-	QToolBar *tooldataacquisition;
-	QToolBar *toolreconstruction;
+    QToolBar *toolmode;
+    QToolBar *toolusb;
+    QToolBar *tooldataacquisition;
+    QToolBar *toolreconstruction;
 
-	QAction *openusb_action;
-	QAction *closeusb_action;
-	QAction *tdlas_action;
-	QAction *ECT_action;
-	QAction *dataacquisition_action;
-	QAction *stopdataacquisition_action;
-	QAction *startdataacquisition_action;
-	//QAction *drawdata_action;
-	QAction *reconstruct_action;
-	QAction *LBP;
-	QAction *caldelong;
+    QAction *openusb_action;
+    QAction *closeusb_action;
+    QAction *tdlas_action;
+    QAction *ECT_action;
+    QAction *dataacquisition_action;
+    QAction *stopdataacquisition_action;
+    QAction *startdataacquisition_action;
+    //QAction *drawdata_action;
+    QAction *reconstruct_action;
+    QAction *LBP;
+    QAction *caldelong;
 
-	showwidget *showwid;
-	public slots:
-	void changelistitemcolor(QListWidgetItem *current, QListWidgetItem *previous);
+    showwidget *showwid;
+    public slots:
+    void changelistitemcolor(QListWidgetItem *current, QListWidgetItem *previous);
 private:
-	QDockWidget *statusdock;
-	class mystatuscontent :public QWidget
-	{
-	public:
-		QSize sizeHint() const
-		{
-			return QSize(900, 100); /* 在这里定义dock的初始大小 */
-		}
+    QDockWidget *statusdock;
+    class mystatuscontent :public QWidget
+    {
+    public:
+        QSize sizeHint() const
+        {
+            return QSize(900, 100); /* 在这里定义dock的初始大小 */
+        }
 
-	};
-	mystatuscontent*statuscontent;
-	QGridLayout *statuslayout;
-	QWidget     *ectdockcontent;
-	QDockWidget *ectdock;
-	QGridLayout *ectdocklayout;
-	QComboBox   *electrode_numberbox;
-	QLabel      *electrode_numberlabel;
-	QPushButton *voidbutton, *fullbutton;
-	QLabel      *chosedifference;
-	QComboBox   *chosedifferencebox;
+    };
+    mystatuscontent*statuscontent;
+    QGridLayout *statuslayout;
+    QWidget     *ectdockcontent;
+    QDockWidget *ectdock;
+    QGridLayout *ectdocklayout;
+    QComboBox   *electrode_numberbox;
+    QLabel      *electrode_numberlabel;
+    QPushButton *voidbutton, *fullbutton;
+    QLabel      *chosedifference;
+    QComboBox   *chosedifferencebox;
 
-public:
-	QMutex *lockthread;
-	RWThread *rwthread1;
-	RWThread *rwthread2;
-	processThreadobj *processthreadobj;
-	QThread *processthread;
-	QThread *matlabthread;
 
-	QByteArray RWbyte;
 
 private:
-	bool needstop;
-	bool reconstructflag;
+    bool needstop;
+    bool reconstructflag;
 };
 
 

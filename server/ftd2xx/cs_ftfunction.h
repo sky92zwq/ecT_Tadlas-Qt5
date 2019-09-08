@@ -10,10 +10,20 @@
 
 class CS_ftfunction:public QLibrary
 {
+private:
+     explicit CS_ftfunction(){};
+     static CS_ftfunction * instance;
+
 public:
 //    explicit CS_ftfunction(QObject *parent = Q_NULLPTR);
-
-     explicit CS_ftfunction();
+    static CS_ftfunction* Instance()
+    {
+        if(instance==nullptr)
+        {
+            instance = new CS_ftfunction();
+        }
+        return instance;
+    }
 
     ~CS_ftfunction();
 public:

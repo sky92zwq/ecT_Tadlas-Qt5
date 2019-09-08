@@ -18,11 +18,13 @@ include_directories(${Qt5Gui_INCLUDE_DIRS})
 
 include_directories(${CMAKE_SOURCE_DIR}/../)
 
+link_directories(${CMAKE_SOURCE_DIR}/../cbb/release/lib)
+link_libraries(cbbmodesys)
+
 set ( untitled1_SRCS
 	main.cpp
 	mypaintusb.cpp
 	mainwindow.cpp
-	mythreads.cpp
 	tdlasdialog.cpp
 	myshowwidget.cpp
 	glwidget.cpp
@@ -42,7 +44,6 @@ QT5_ADD_RESOURCES(RSCS ${untitled1_RSCS})
 set ( untitled1_MOCS
 	mainwindow.h
 	tdlasdialog.h
-	mythreads.h
 	mypaintusb.h
 	myshowwidget.h
 	glwidget.h
@@ -50,4 +51,4 @@ set ( untitled1_MOCS
 QT5_WRAP_CPP(MOCS ${untitled1_MOCS})
 
 add_executable ( ETClient ${untitled1_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
-target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets )
+target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets  )
