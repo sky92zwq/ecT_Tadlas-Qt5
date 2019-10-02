@@ -3,7 +3,7 @@
 #include <QtCore>
 #include <QVBoxLayout>
 #include <QFrame>
-#include "mypaintusb.h"
+#include "myPaintPoints.h"
 #include "glwidget.h"
 
 ///
@@ -23,8 +23,8 @@ public:
 
     QFrame *ECTpaintframe;
     QFrame *ECTpaintframe_2;
-    myPaintusb *paintusbect;
-    myPaintusb *paintusbect_2;
+    myPaintPoints *paintusbect;
+    myPaintPoints *paintusbect_2;
 
     GLWidget * openglwid;
 

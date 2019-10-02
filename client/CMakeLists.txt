@@ -6,6 +6,7 @@ set( CMAKE_INCLUDE_CURRENT_DIR ON )
 set( CMAKE_AUTOMOC ON )
 set( CMAKE_BUILD_TYPE Release )
 set( CMAKE_PREFIX_PATH /home/zwq/Qt5.13.0/5.13.0/gcc_64/lib/cmake/ )
+SET( EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/release/bin)
 add_definitions ( -Wall )
 find_package ( Qt5Widgets REQUIRED )
 find_package ( Qt5Core REQUIRED )
@@ -19,36 +20,36 @@ include_directories(${Qt5Gui_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/../)
 
 link_directories(${CMAKE_SOURCE_DIR}/../cbb/release/lib)
-link_libraries(cbbmodesys)
 
-set ( untitled1_SRCS
+
+set ( ETClient_SRCS
 	main.cpp
-	mypaintusb.cpp
+	mypaintPoints.cpp
 	mainwindow.cpp
 	tdlasdialog.cpp
 	myshowwidget.cpp
 	glwidget.cpp
 	)
 
-set ( untitled1_UIS
+set ( ETClient_UIS
 	mainwindow.ui
 	tdlasdialog.ui
 	)
-QT5_WRAP_UI(UIS ${untitled1_UIS})
+QT5_WRAP_UI(UIS ${ETClient_UIS})
 
-set ( untitled1_RSCS
+set ( ETClient_RSCS
 	rsc.qrc
 	)
-QT5_ADD_RESOURCES(RSCS ${untitled1_RSCS})
+QT5_ADD_RESOURCES(RSCS ${ETClient_RSCS})
 
-set ( untitled1_MOCS
+set ( ETClient_MOCS
 	mainwindow.h
 	tdlasdialog.h
-	mypaintusb.h
+	mypaintPoints.h
 	myshowwidget.h
 	glwidget.h
 	)
-QT5_WRAP_CPP(MOCS ${untitled1_MOCS})
+QT5_WRAP_CPP(MOCS ${ETClient_MOCS})
 
-add_executable ( ETClient ${untitled1_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
-target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets  )
+add_executable ( ETClient ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
+target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets cbbmodesys )

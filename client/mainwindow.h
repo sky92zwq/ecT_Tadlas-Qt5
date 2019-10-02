@@ -22,7 +22,7 @@
 #include <QListWidgetItem>
 
 #include "tdlasdialog.h"
-#include "mypaintusb.h"
+#include "myPaintPoints.h"
 #include "cbb/ectclass.h"
 #include "cbb/mode.h"
 #include <myshowwidget.h>
@@ -45,11 +45,7 @@ public:
     ~MainWindow();
 
     void resizeEvent(QResizeEvent *event);
-public:
-    ECTClass *ect;
-
-
-    protected slots:
+protected slots:
     void openusb();
 
     void closeusb();

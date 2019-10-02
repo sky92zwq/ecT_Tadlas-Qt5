@@ -187,9 +187,9 @@ void Myusb::startdataacquisition()//开始采集
         //connect(rwthread2, &RWThread::quitprocess, processthread, &QThread::quit);
         //connect(rwthread2, &RWThread::finished, processthread, &QThread::quit);
 
-        connect(processthreadobj,&processThreadobj::sigdrawECTusbdata,showwid->paintusbect,&myPaintusb::updatepoints,Qt::DirectConnection);//同步！！
-        connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
-        connect(processthreadobj,&processThreadobj::sigdrawECTdifference,showwid->paintusbect_2,&myPaintusb::updateonencirclepoints);//异步！！
+        connect(processthreadobj,&processThreadobj::sigdrawECTusbdata,showwid->paintusbect,&myPaintPoints::updatepoints,Qt::DirectConnection);//同步！！
+        connect(processthreadobj,&processThreadobj::sigdrawECTonecircledata,showwid->paintusbect_2,&myPaintPoints::updateonencirclepoints);//异步！！
+        connect(processthreadobj,&processThreadobj::sigdrawECTdifference,showwid->paintusbect_2,&myPaintPoints::updateonencirclepoints);//异步！！
         connect(processthreadobj,&processThreadobj::sigdrawTDlasusbdata,this,&Myusb::drawTDlasusbdata);
         connect(&(processthreadobj->timer), SIGNAL(timeout()), processthreadobj, SLOT(tomatlabhelper()), Qt::DirectConnection);//sigECTonecircledata
         connect(processthreadobj, &processThreadobj::sigECTonecircledata, measuresys, &MeasureSys::sigOneFrame);

@@ -4,15 +4,14 @@ set( CMAKE_CXX_STANDARD 14)
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 set( CMAKE_AUTOMOC ON )
 set( CMAKE_BUILD_TYPE Release )
-set( CMAKE_POSITION_INDEPENDENT_CODE ON)
 set( CMAKE_PREFIX_PATH /home/zwq/Qt5.13.0/5.13.0/gcc_64/lib/cmake/ )
-SET( LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../lib) 
+SET( LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../release/lib) 
 add_definitions ( -Wall )
 find_package ( Qt5Core REQUIRED )
 
 include_directories(${Qt5Core_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/../../)
-include_directories(${PROJECT_SOURCE_DIR}/../lib/)
+include_directories(${PROJECT_SOURCE_DIR}/../release/lib/)
 
 set( SRC
     base_alg.cpp
@@ -21,3 +20,4 @@ set( SRC
     )
 
 add_library(alg SHARED ${SRC})
+target_link_libraries ( alg  Qt5::Core )

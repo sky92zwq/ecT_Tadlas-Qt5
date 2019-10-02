@@ -1,6 +1,6 @@
-﻿#include "mypaintusb.h"
+﻿#include "myPaintPoints.h"
 
-myPaintusb::myPaintusb(QWidget *parent, int datalong) : QWidget(parent)
+myPaintPoints::myPaintPoints(QWidget *parent, int datalong) : QWidget(parent)
 {
     setPalette(QPalette(Qt::white));
     setAutoFillBackground(true);
@@ -8,20 +8,18 @@ myPaintusb::myPaintusb(QWidget *parent, int datalong) : QWidget(parent)
     pen.setColor(QColor(255,0,0));  //设置画笔为红色
     points=(QPointF*)malloc(sizeof(QPointF)*datalong);
 
-    ect=ECTClass::getInstance();
-
     onecircletimes=0;
     maxtext=0;
     showlong=0;
 
 }
 
-myPaintusb::~myPaintusb()
+myPaintPoints::~myPaintPoints()
 {
     free(points);
 }
 
-void myPaintusb::paintEvent(QPaintEvent *)
+void myPaintPoints::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
@@ -38,7 +36,7 @@ void myPaintusb::paintEvent(QPaintEvent *)
 
 }
 
-void myPaintusb::setpoints(QVector<float> &vec,float max,float min)
+void myPaintPoints::setpoints(QVector<float> &vec,float max,float min)
 {
     double maxmingap;
     if (max == min) min=0;
@@ -58,7 +56,7 @@ void myPaintusb::setpoints(QVector<float> &vec,float max,float min)
 
     update();
 }
-void myPaintusb::setonecirclepoints(float*vec,float max,float min)
+void myPaintPoints::setonecirclepoints(float*vec,float max,float min)
 {
 
     maxtext=max;
@@ -70,7 +68,7 @@ void myPaintusb::setonecirclepoints(float*vec,float max,float min)
         if(max==0)max=1;
     }
     maxmingap=max-min;
-    showlong=ect->measurenumber();
+    showlong=ECTClass::getInstance()->measurenumber();
     showgap=(double)this->width()/showlong;
 
 

@@ -8,16 +8,16 @@ class ECTClass
 public:
     static ECTClass* getInstance()
     {
-        static ECTClass    instance;
+        static ECTClass instance;
         return &instance;
     }
     inline double calculatebuffer(unsigned char *buffer, int i){
         return (buffer[i]*256+buffer[i+1])*64/1*M_PI/2/400*2/8192*1000;
     }
 private:
-    ECTClass(){}               // Constructor
-//    ECTClass(ECTClass const&);              // Don't Implement
-//    ECTClass & operator=(ECTClass const&); // Don't implement
+    ECTClass();               // Constructor
+    ECTClass(const ECTClass&);              // Don't Implement
+    ECTClass & operator=(const ECTClass&); // Don't implement
 private:
     quint8 electrode_number=16;
     quint16 measuregapnumber;

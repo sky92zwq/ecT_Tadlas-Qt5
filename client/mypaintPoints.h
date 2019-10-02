@@ -1,5 +1,5 @@
-﻿#ifndef MYPAINTUSB_H
-#define MYPAINTUSB_H
+﻿#ifndef myPaintPoints_H
+#define myPaintPoints_H
 
 #include <QWidget>
 #include <QPen>
@@ -9,12 +9,12 @@
 #include "cbb/ectclass.h"
 #include <qtimer.h>
 
-class myPaintusb : public QWidget
+class myPaintPoints : public QWidget
 {
     Q_OBJECT
 public:
-    explicit myPaintusb(QWidget *parent=0,int datalong=4096);
-    ~myPaintusb();
+    explicit myPaintPoints(QWidget *parent=0,int datalong=4096);
+    ~myPaintPoints();
 
     void paintEvent(QPaintEvent *);
     void setpoints(QVector<float> &vec, float max, float min);
@@ -32,8 +32,6 @@ public:
     float maxtext,mintext;
     float showgap;
     float halfheight;
-public:
-    ECTClass *ect;
 };
 
-#endif // MYPAINTUSB_H
+#endif // myPaintPoints_H

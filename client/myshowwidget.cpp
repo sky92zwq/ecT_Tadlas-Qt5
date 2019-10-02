@@ -8,8 +8,8 @@ showwidget::showwidget(QWidget *parent)
     mainshowlayout=new QVBoxLayout(NULL);
     ECTpaintframe=new QFrame;
     ECTpaintframe_2=new QFrame;
-    paintusbect=new myPaintusb(NULL,4096);
-    paintusbect_2=new myPaintusb(NULL,4096);
+    paintusbect=new myPaintPoints(NULL,4096);
+    paintusbect_2=new myPaintPoints(NULL,4096);
     mainshowlayout->addWidget(paintusbect_2);
     mainshowlayout->addWidget(paintusbect);
 //    openglwid = new myOpenGLwid();

@@ -11,8 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ect = ECTClass::getInstance();
-    ect->setelectrode_number(16);
+    ECTClass::getInstance()->setelectrode_number(16);
 
     createaction();
     createmenus();      //菜单栏
@@ -298,22 +297,22 @@ void MainWindow::childrenWidstatus(QString &str)//查看 子窗口 状态
 
 void MainWindow::setelectrodenum(const QString &text)
 {
-    ect->setelectrode_number((quint8)text.toInt());
-    qDebug()<<ect->measurenumber();
+    ECTClass::getInstance()->setelectrode_number((quint8)text.toInt());
+    qDebug()<<ECTClass::getInstance()->measurenumber();
 }
 
 void MainWindow::setectdifference(const QString &differ)
 {
-    if(differ==QString("difference")&&ect->alreadyVoidcalibtrated())ect->differencemode=true;
+    if(differ==QString("difference")&&ECTClass::getInstance()->alreadyVoidcalibtrated())ECTClass::getInstance()->differencemode=true;
     else if(differ==QString("difference")){
         ui->listWidget_2->addItem("void calibration first");
         chosedifferencebox->setCurrentText("origin");
     }
     else {
-        ect->differencemode=false;
+        ECTClass::getInstance()->differencemode=false;
         chosedifferencebox->setCurrentText("origin");
     }
-    qDebug()<<ect->differencemode;
+    qDebug()<<ECTClass::getInstance()->differencemode;
 }
 void MainWindow::ectvoidCalibration()
 {

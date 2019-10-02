@@ -1,5 +1,10 @@
 ﻿#include "ectclass.h"
 
+ECTClass::ECTClass()
+{
+    //do nothing
+}
+
 void ECTClass::setelectrode_number(quint8 num)
 {
     electrode_number=num;
