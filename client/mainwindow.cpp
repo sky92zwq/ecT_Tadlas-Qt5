@@ -1,7 +1,8 @@
-﻿#include "mainwindow.h"
+﻿#include <QDebug>
+#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tdlasdialog.h"
-#include <QDebug>
+#include "myClientCommand.h"
 
 
 
@@ -29,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (mode::m_mode == mode::TDlas)
         tdlas();
     //    stopdataacquisition_action->setEnabled(false);
-
+    CommandInvoker.registercmd("5555",new CommandUpdateXXXX());
 }
 
 MainWindow::~MainWindow()
@@ -268,7 +269,7 @@ void MainWindow::Ect()
 
 void MainWindow::dataacquisition()//数据采集 action
 {
-
+    Tcpclt.sendCommand("5555");
 }
 
 void MainWindow::stopdataacquisition()//停止数据采集 action

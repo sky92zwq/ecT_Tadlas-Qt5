@@ -25,8 +25,9 @@
 #include "myPaintPoints.h"
 #include "cbb/ectclass.h"
 #include "cbb/mode.h"
+#include "cbb/Command.h"
 #include <myshowwidget.h>
-
+#include "myTCPClient.h"
 
 
 namespace Ui {
@@ -156,6 +157,9 @@ private:
 private:
     bool needstop;
     bool reconstructflag;
+private:
+    MyTcpClient Tcpclt;
+    Invoker CommandInvoker;
 };
 
 

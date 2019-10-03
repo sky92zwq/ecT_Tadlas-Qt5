@@ -11,10 +11,12 @@ add_definitions ( -Wall )
 find_package ( Qt5Widgets REQUIRED )
 find_package ( Qt5Core REQUIRED )
 find_package ( Qt5Gui REQUIRED )
+find_package ( Qt5Network REQUIRED )
 
 include_directories(${Qt5Core_INCLUDE_DIRS})
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 include_directories(${Qt5Gui_INCLUDE_DIRS})
+include_directories(${Qt5Network_INCLUDE_DIRS})
 
 
 include_directories(${CMAKE_SOURCE_DIR}/../)
@@ -29,6 +31,8 @@ set ( ETClient_SRCS
 	tdlasdialog.cpp
 	myshowwidget.cpp
 	glwidget.cpp
+	myTcpClient.cpp
+	myClientCommand.cpp
 	)
 
 set ( ETClient_UIS
@@ -48,8 +52,10 @@ set ( ETClient_MOCS
 	mypaintPoints.h
 	myshowwidget.h
 	glwidget.h
+	myTcpClient.h
+	myClientCommand.h
 	)
 QT5_WRAP_CPP(MOCS ${ETClient_MOCS})
 
 add_executable ( ETClient ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
-target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets cbbmodesys )
+target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network cbbmodesys )
