@@ -5,8 +5,7 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 set( CMAKE_AUTOMOC ON )
 set( CMAKE_BUILD_TYPE Release )
-set( CMAKE_PREFIX_PATH /home/zwq/Qt5.13.0/5.13.0/gcc_64/lib/cmake/ )
-SET( EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/release/bin)
+SET( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_LIST_DIR}/release/bin)
 add_definitions ( -Wall )
 find_package ( Qt5Widgets REQUIRED )
 find_package ( Qt5Core REQUIRED )
@@ -19,9 +18,9 @@ include_directories(${Qt5Gui_INCLUDE_DIRS})
 include_directories(${Qt5Network_INCLUDE_DIRS})
 
 
-include_directories(${CMAKE_SOURCE_DIR}/../)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
-link_directories(${CMAKE_SOURCE_DIR}/../cbb/release/lib)
+link_directories(${CMAKE_CURRENT_LIST_DIR}/../cbb/release/lib)
 
 
 set ( ETClient_SRCS
