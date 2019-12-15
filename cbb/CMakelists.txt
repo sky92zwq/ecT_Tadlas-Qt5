@@ -22,3 +22,4 @@ target_link_libraries(cbbmodesys Qt5::Core)
 # 指定安装路径
 install (FILES ${HEAD_FILES} DESTINATION  include)
 install (TARGETS cbbmodesys DESTINATION lib)
+install (TARGETS cbbmodesys DESTINATION bin)
