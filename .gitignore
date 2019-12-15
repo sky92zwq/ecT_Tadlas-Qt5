@@ -242,3 +242,7 @@ ModelManifest.xml
 .fake/
 
 *.opendb 
+include/
+sdk/
+release/
+.vscode/
