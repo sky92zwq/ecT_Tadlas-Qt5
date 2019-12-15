@@ -24,4 +24,4 @@ set( SRC
     )
 
 add_library(measuresys SHARED ${SRC})
-target_link_libraries ( measuresys  Qt5::Core alg)
+target_link_libraries ( measuresys  Qt5::Core alg cbbmodesys)

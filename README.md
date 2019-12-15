@@ -1,3 +1,10 @@
+# How to build? #
+
+- first,
+- second,
+- finally,
+
+
 # qt5.7usb
 A software of ECT and TDLAS  
 client and server are both based on Qt5  

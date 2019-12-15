@@ -253,4 +253,7 @@ settings.json
 *bak
 *.user 
 *.gitignore
+include/*
+release/*
+sdk/*
 

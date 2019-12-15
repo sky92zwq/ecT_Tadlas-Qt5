@@ -1,11 +1,9 @@
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
-project( ETClient )
 cmake_minimum_required( VERSION 3.1 )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 set( CMAKE_AUTOMOC ON )
 set( CMAKE_BUILD_TYPE Release )
-SET( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_LIST_DIR}/release/bin)
 add_definitions ( -Wall )
 find_package ( Qt5Widgets REQUIRED )
 find_package ( Qt5Core REQUIRED )
@@ -58,3 +56,5 @@ QT5_WRAP_CPP(MOCS ${ETClient_MOCS})
 
 add_executable ( ETClient ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
 target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network cbbmodesys )
+# 指定安装路径
+install (TARGETS ETClient DESTINATION bin)
