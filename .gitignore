@@ -256,4 +256,4 @@ settings.json
 include/*
 release/*
 sdk/*
-
+cmake/

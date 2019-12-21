@@ -1,3 +1,4 @@
+project(ECT_TDLAS_CLIENT)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 cmake_minimum_required( VERSION 3.1 )
 set( CMAKE_CXX_STANDARD 14 )
@@ -18,7 +19,7 @@ include_directories(${Qt5Network_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
-link_directories(${CMAKE_CURRENT_LIST_DIR}/../cbb/release/lib)
+link_directories(${CMAKE_CURRENT_LIST_DIR}/../release/lib)
 
 
 set ( ETClient_SRCS
@@ -53,8 +54,16 @@ set ( ETClient_MOCS
 	myClientCommand.h
 	)
 QT5_WRAP_CPP(MOCS ${ETClient_MOCS})
+if(WIN32)
+	add_executable ( ETClient WIN32 ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
+elseif()
+	add_executable ( ETClient ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
+endif(WIN32)
 
-add_executable ( ETClient ${ETClient_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
 target_link_libraries ( ETClient  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network cbbmodesys )
 # 指定安装路径
 install (TARGETS ETClient DESTINATION bin)
+# if(WIN32)
+# 	include(DeployQt)
+# 	windeployqt(ETClient)
+# endif(WIN32)
